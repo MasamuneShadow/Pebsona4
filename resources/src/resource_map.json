@@ -78,12 +78,13 @@
         {
             "trackingAdjust": -1,
             "characterRegex": "[0-9:.]",
-            "defName": "FONT_DAYS_19",
+            "defName": "FONT_DAYS_18",
             "type": "font",
             "file": "fonts/Days.ttf"
         },
         {
-            "defName": "FONT_DAYS_22",
+            "trackingAdjust": -1,
+            "defName": "FONT_DAYS_21",
             "type": "font",
             "file": "fonts/Days.ttf"
         },

@@ -86,40 +86,51 @@ void layer_update_callback(Layer *me, GContext* ctx) {
   (void)ctx;
 	layer_remove_from_parent(&displayword.layer.layer);
 	rotbmp_pair_deinit_container(&displayword);
-	
+
 	if (current_word == 0)//midnight
 	{
 		rotbmp_pair_init_container(RESOURCE_ID_IMAGE_TIME_MIDNIGHT_WHITE,RESOURCE_ID_IMAGE_TIME_MIDNIGHT_BLACK,&displayword);
+		
 	}
 	else if (current_word == 1) //early morning
 	{
 		rotbmp_pair_init_container(RESOURCE_ID_IMAGE_TIME_EARLYMORNING_WHITE,RESOURCE_ID_IMAGE_TIME_EARLYMORNING_BLACK,&displayword);
+		//rotbmp_pair_init_container(RESOURCE_ID_IMAGE_TIME_MORNING_WHITE,RESOURCE_ID_IMAGE_TIME_MORNING_BLACK,&displayword);
+		//layer_set_frame(&word_layer, GRect(0,10,168,80));
 	}
 	else if(current_word == 2) //morning
 	{
 		rotbmp_pair_init_container(RESOURCE_ID_IMAGE_TIME_MORNING_WHITE,RESOURCE_ID_IMAGE_TIME_MORNING_BLACK,&displayword);
+		//layer_set_frame(&word_layer, GRect(0,25,168,80));
 	}
 	else if(current_word == 3)//lunchtime
 	{
 		rotbmp_pair_init_container(RESOURCE_ID_IMAGE_TIME_LUNCHTIME_WHITE,RESOURCE_ID_IMAGE_TIME_LUNCHTIME_BLACK,&displayword);
+		//layer_set_frame(&word_layer, GRect(0,25,168,80));		
 	}
 	else if(current_word == 4)//afternoon
 	{
 		rotbmp_pair_init_container(RESOURCE_ID_IMAGE_TIME_AFTERNOON_WHITE,RESOURCE_ID_IMAGE_TIME_AFTERNOON_BLACK,&displayword);
+			//layer_set_frame(&word_layer, GRect(0,25,168,80));
 	}
 	else if(current_word == 5)//evening
 	{
 		rotbmp_pair_init_container(RESOURCE_ID_IMAGE_TIME_EVENING_WHITE,RESOURCE_ID_IMAGE_TIME_EVENING_BLACK,&displayword);
+		//layer_set_frame(&word_layer, GRect(0,25,168,80));
 	}
 	else if(current_word == 6)//night
 	{
 		rotbmp_pair_init_container(RESOURCE_ID_IMAGE_TIME_NIGHT_WHITE,RESOURCE_ID_IMAGE_TIME_NIGHT_BLACK,&displayword);
+			//layer_set_frame(&word_layer, GRect(0,25,168,80));
 	}
-        	
+	else if(current_word == 7)//Unknown
+	{
+		rotbmp_pair_init_container(RESOURCE_ID_IMAGE_BLANK_WHITE,RESOURCE_ID_IMAGE_BLANK_BLACK,&displayword);
+	}        	
   // We make sure the dimensions of the GRect to draw into
   // are equal to the size of the bitmap--otherwise the image
   // will automatically tile. Which might be what *you* want.
-
+	
 	layer_add_child(&word_layer, &displayword.layer.layer);
 }
 
@@ -131,7 +142,7 @@ void weather_update_callback(Layer *me, GContext* ctx) {
 	//Either compile the images in photoshop, or figure them out here
 	layer_remove_from_parent(&weather.layer.layer);
 	rotbmp_pair_deinit_container(&weather);
-	
+
 	if (current_weather == 0)//UNKNOWN/BLANK
 	{
 		rotbmp_pair_init_container(RESOURCE_ID_IMAGE_WEATHER_UNKNOWN_WHITE,RESOURCE_ID_IMAGE_WEATHER_UNKNOWN_BLACK,&weather);
@@ -152,7 +163,7 @@ void weather_update_callback(Layer *me, GContext* ctx) {
 	{
 		rotbmp_pair_init_container(RESOURCE_ID_IMAGE_WEATHER_SNOW_WHITE,RESOURCE_ID_IMAGE_WEATHER_SNOW_BLACK,&weather);
 	}
-	        	
+
   // We make sure the dimensions of the GRect to draw into
   // are equal to the size of the bitmap--otherwise the image
   // will automatically tile. Which might be what *you* want.
@@ -266,26 +277,32 @@ void handle_init(AppContextRef ctx) {
     window_init(&window, "PEBSONA4");
     window_stack_push(&window, true /* Animated */);
     window_set_background_color(&window, GColorClear);
-
+	
     resource_init_current_app(&APP_RESOURCES);
     //Create Containers
     bmp_init_container(RESOURCE_ID_IMAGE_BACKGROUND,  &background_image);
 	rotbmp_pair_init_container(RESOURCE_ID_IMAGE_BLANK_WHITE,RESOURCE_ID_IMAGE_BLANK_BLACK,&displayword);
 	rotbmp_pair_init_container(RESOURCE_ID_IMAGE_WEATHER_UNKNOWN_WHITE,RESOURCE_ID_IMAGE_WEATHER_UNKNOWN_BLACK,&weather);
-	
+
     //font stuff
-    res_t = resource_get_handle(RESOURCE_ID_FONT_DAYS_19);
-    res_d = resource_get_handle(RESOURCE_ID_FONT_DAYS_22);
+    res_t = resource_get_handle(RESOURCE_ID_FONT_DAYS_18);
+    res_d = resource_get_handle(RESOURCE_ID_FONT_DAYS_21);
     font_time = fonts_load_custom_font(res_t);
     font_date = fonts_load_custom_font(res_d);
     
     previous_hour = 99;
     previous_word = 99;
-    current_word = 0;
+    current_word = 7;
 	previous_weather = 99;
-	current_weather = 0; //sunny
+	current_weather = 0; //uNKNOWN
     layer_add_child(&window.layer,&background_image.layer.layer);
-        
+
+	layer_init(&weather_layer, window.layer.frame);
+	layer_set_frame(&weather_layer, GRect(34,68,90,90));
+  	weather_layer.update_proc = &weather_update_callback;
+  	layer_add_child(&window.layer, &weather_layer);
+	
+	
     text_layer_init(&text_date_layer, window.layer.frame);
     text_layer_set_text_color(&text_date_layer, GColorWhite);
     text_layer_set_background_color(&text_date_layer, GColorClear);
@@ -296,28 +313,23 @@ void handle_init(AppContextRef ctx) {
     text_layer_init(&text_time_layer, window.layer.frame);
     text_layer_set_text_color(&text_time_layer, GColorWhite);
     text_layer_set_background_color(&text_time_layer, GColorClear);
-    layer_set_frame(&text_time_layer.layer, GRect(0, 140, 80,55));
+    layer_set_frame(&text_time_layer.layer, GRect(0, 145, 80,55));
     text_layer_set_font(&text_time_layer, font_time);
     layer_add_child(&window.layer, &text_time_layer.layer);
 
+	GRect destination = GRect(0,0,144,80);
+    layer_init(&word_layer, destination);
+	//destination = GRect(0,0,144,22);
+	//layer_set_frame(&word_layer,destination);
+  	word_layer.update_proc = &layer_update_callback;
+  	layer_add_child(&window.layer, &word_layer);
 	    //not my prefered implmentation, but until i can cut down size/get it wroking right,
     //it'll have to do
 
     //"MIDNIGHT" Layer White
-    layer_init(&word_layer, window.layer.frame);
-//	GRect word_destination = layer_get_frame(&displayword.layer.layer);	
-  //word_destination.origin.x = 0;
-  //word_destination.origin.y = 45;
-	layer_set_frame(&word_layer, GRect(0,25,144,40));
-  	word_layer.update_proc = &layer_update_callback;
-  	layer_add_child(&window.layer, &word_layer);
-	
-	layer_init(&weather_layer, window.layer.frame);
-	layer_set_frame(&weather_layer, GRect(34,68,90,90));
-  	weather_layer.update_proc = &weather_update_callback;
-  	layer_add_child(&window.layer, &weather_layer);
+
 }
-	
+
 void pbl_main(void *params)
 {
     PebbleAppHandlers handlers =
