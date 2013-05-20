@@ -1,0 +1,98 @@
+{
+    "media": [
+        {
+            "defName": "IMAGE_WEATHER_RAIN",
+            "type": "png-trans",
+            "file": "images/rain.png"
+        },
+        {
+            "defName": "IMAGE_WEATHER_SNOW",
+            "type": "png-trans",
+            "file": "images/snowman.png"
+        },
+        {
+            "defName": "IMAGE_WEATHER_CLOUD",
+            "type": "png-trans",
+            "file": "images/cloud.png"
+        },
+        {
+            "defName": "IMAGE_WEATHER_UNKNOWN",
+            "type": "png-trans",
+            "file": "images/unknown.png"
+        },
+        {
+            "defName": "IMAGE_TIME_EVENING",
+            "type": "png-trans",
+            "file": "images/evening.png"
+        },
+        {
+            "defName": "IMAGE_WEATHER_SUN",
+            "type": "png-trans",
+            "file": "images/sunny.png"
+        },
+        {
+            "defName": "IMAGE_BLANK",
+            "type": "png-trans",
+            "file": "images/blank.png"
+        },
+        {
+            "defName": "IMAGE_TIME_NIGHT",
+            "type": "png-trans",
+            "file": "images/night.png"
+        },
+        {
+            "defName": "IMAGE_TIME_AFTERNOON",
+            "type": "png-trans",
+            "file": "images/afternoon.png"
+        },
+        {
+            "defName": "IMAGE_TIME_LUNCHTIME",
+            "type": "png-trans",
+            "file": "images/lunchtime.png"
+        },
+        {
+            "defName": "IMAGE_TIME_MORNING",
+            "type": "png-trans",
+            "file": "images/morning.png"
+        },
+        {
+            "defName": "IMAGE_TIME_EARLYMORNING",
+            "type": "png-trans",
+            "file": "images/earlymorning.png"
+        },
+        {
+            "defName": "IMAGE_TIME_MIDNIGHT",
+            "type": "png-trans",
+            "file": "images/midnight.png"
+        },
+        {
+            "defName": "IMAGE_MENU_ICON",
+            "type": "png",
+            "file": "images/menu_icon.png"
+        },
+        {
+            "defName": "IMAGE_TIME_EVENING",
+            "type": "png",
+            "file": "images/05.png"
+        },
+        {
+            "trackingAdjust": -1,
+            "characterRegex": "[0-9:.]",
+            "defName": "FONT_DAYS_19",
+            "type": "font",
+            "file": "fonts/Days.ttf"
+        },
+        {
+            "defName": "FONT_DAYS_22",
+            "type": "font",
+            "file": "fonts/Days.ttf"
+        },
+        {
+            "defName": "IMAGE_BACKGROUND",
+            "type": "png",
+            "file": "images/persona4.png"
+        }
+    ],
+    "friendlyVersion": "VERSION",
+    "versionDefName": "APP_RESOURCES"
+}
