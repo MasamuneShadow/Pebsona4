@@ -1,79 +1,169 @@
 {
     "media": [
         {
-            "defName": "IMAGE_WEATHER_RAIN",
-            "type": "png-trans",
-            "file": "images/rain.png"
+            "defName": "IMAGE_TIME_MORNING_INVERT",
+            "type": "png",
+            "file": "images/morning_invert.png"
+        },
+        {
+            "defName": "IMAGE_TIME_NIGHT_INVERT",
+            "type": "png",
+            "file": "images/night_invert.png"
+        },
+        {
+            "defName": "IMAGE_TIME_LUNCHTIME_INVERT",
+            "type": "png",
+            "file": "images/lunchtime_invert.png"
+        },
+        {
+            "defName": "IMAGE_TIME_AFTERNOON_INVERT",
+            "type": "png",
+            "file": "images/afternoon_invert.png"
+        },
+        {
+            "defName": "IMAGE_TIME_EARLY_MORNING_INVERT",
+            "type": "png",
+            "file": "images/earlymorning_invert.png"
+        },
+        {
+            "defName": "IMAGE_TIME_EVENING_INVERT",
+            "type": "png",
+            "file": "images/evening_invert.png"
+        },
+        {
+            "defName": "IMAGE_TIME_MIDNIGHT_INVERT",
+            "type": "png",
+            "file": "images/midnight_invert.png"
+        },
+        {
+            "defName": "IMAGE_DIGIT_SLASH",
+            "type": "png",
+            "file": "images/slash.PNG"
+        },
+        {
+            "defName": "IMAGE_DIGIT_COLON",
+            "type": "png",
+            "file": "images/colon.PNG"
+        },
+        {
+            "defName": "IMAGE_DIGIT_9",
+            "type": "png",
+            "file": "images/9.png"
+        },
+        {
+            "defName": "IMAGE_DIGIT_8",
+            "type": "png",
+            "file": "images/8.png"
+        },
+        {
+            "defName": "IMAGE_DIGIT_7",
+            "type": "png",
+            "file": "images/7.PNG"
+        },
+        {
+            "defName": "IMAGE_DIGIT_6",
+            "type": "png",
+            "file": "images/6.PNG"
+        },
+        {
+            "defName": "IMAGE_DIGIT_5",
+            "type": "png",
+            "file": "images/5.PNG"
+        },
+        {
+            "defName": "IMAGE_DIGIT_4",
+            "type": "png",
+            "file": "images/4.PNG"
+        },
+        {
+            "defName": "IMAGE_DIGIT_3",
+            "type": "png",
+            "file": "images/3.PNG"
+        },
+        {
+            "defName": "IMAGE_DIGIT_2",
+            "type": "png",
+            "file": "images/2.PNG"
+        },
+        {
+            "defName": "IMAGE_DIGIT_1",
+            "type": "png",
+            "file": "images/1.PNG"
+        },
+        {
+            "defName": "IMAGE_DIGIT_0",
+            "type": "png",
+            "file": "images/0.PNG"
+        },
+        {
+            "defName": "IMAGE_TIME_BLANK",
+            "type": "png",
+            "file": "images/blank.png"
+        },
+        {
+            "defName": "IMAGE_WEATHER_UNKNOWN",
+            "type": "png",
+            "file": "images/unknown.png"
         },
         {
             "defName": "IMAGE_WEATHER_SNOW",
-            "type": "png-trans",
+            "type": "png",
             "file": "images/snowman.png"
         },
         {
             "defName": "IMAGE_WEATHER_CLOUD",
-            "type": "png-trans",
+            "type": "png",
             "file": "images/cloud.png"
         },
         {
-            "defName": "IMAGE_WEATHER_UNKNOWN",
-            "type": "png-trans",
-            "file": "images/unknown.png"
-        },
-        {
-            "defName": "IMAGE_TIME_EVENING",
-            "type": "png-trans",
-            "file": "images/evening.png"
-        },
-        {
-            "defName": "IMAGE_WEATHER_SUN",
-            "type": "png-trans",
-            "file": "images/sunny.png"
-        },
-        {
-            "defName": "IMAGE_BLANK",
-            "type": "png-trans",
-            "file": "images/blank.png"
+            "defName": "IMAGE_WEATHER_RAIN",
+            "type": "png",
+            "file": "images/rain.png"
         },
         {
             "defName": "IMAGE_TIME_NIGHT",
-            "type": "png-trans",
-            "file": "images/night.png"
+            "type": "png",
+            "file": "images/night.PNG"
         },
         {
-            "defName": "IMAGE_TIME_AFTERNOON",
-            "type": "png-trans",
-            "file": "images/afternoon.png"
-        },
-        {
-            "defName": "IMAGE_TIME_LUNCHTIME",
-            "type": "png-trans",
-            "file": "images/lunchtime.png"
+            "defName": "IMAGE_TIME_EVENING",
+            "type": "png",
+            "file": "images/evening.PNG"
         },
         {
             "defName": "IMAGE_TIME_MORNING",
-            "type": "png-trans",
-            "file": "images/morning.png"
+            "type": "png",
+            "file": "images/morning.PNG"
         },
         {
-            "defName": "IMAGE_TIME_EARLYMORNING",
-            "type": "png-trans",
+            "defName": "IMAGE_TIME_EARLY_MORNING",
+            "type": "png",
             "file": "images/earlymorning.png"
         },
         {
+            "defName": "IMAGE_TIME_LUNCHTIME",
+            "type": "png",
+            "file": "images/lunchtime.PNG"
+        },
+        {
+            "defName": "IMAGE_TIME_AFTERNOON",
+            "type": "png",
+            "file": "images/afternoon.PNG"
+        },
+        {
+            "defName": "IMAGE_WEATHER_SUN",
+            "type": "png",
+            "file": "images/sunny.png"
+        },
+        {
             "defName": "IMAGE_TIME_MIDNIGHT",
-            "type": "png-trans",
-            "file": "images/midnight.png"
+            "type": "png",
+            "file": "images/midnight.PNG"
         },
         {
             "defName": "IMAGE_MENU_ICON",
             "type": "png",
             "file": "images/menu_icon.png"
-        },
-        {
-            "defName": "IMAGE_TIME_EVENING",
-            "type": "png",
-            "file": "images/05.png"
         },
         {
             "trackingAdjust": -1,
