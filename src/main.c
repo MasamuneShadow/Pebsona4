@@ -107,7 +107,7 @@ BmpContainer imgWeather;
 /*=========Bools============*/
 bool isDayTransitioning = false;
 bool isWordTransitioning = false;
-//bool isTransitioning = false;
+bool isTransitioning = false;
 //bool isWordImageOnly = false;
 
 
@@ -476,19 +476,6 @@ void GetAndSetCurrentWord(PblTm* currentTime)
             currentWord = 6;//night
             break;
     }
-	int hour = currentTime->tm_hour;
-	if (!clock_is_24h_style()) 
-	{
-		hour = hour % 12;
-    	if (hour == 0) 
-		{
-      		hour = 12;
-		}	
-	}	
-	int value = hour %100;
-	
-	currentH1 = value / 10;
-	currentH2 = value % 10;
 	
     if (previousWord != currentWord)
     {
@@ -563,8 +550,20 @@ void handle_minute_tick(AppContextRef ctx, PebbleTickEvent *t) {
 		
 		if (previousDay != currentDay){}
 	
-		//hours are set in the GetAndSetCurrentWord(only will change when it will)
-		int value = t->tick_time->tm_min %100;
+		int hour = t->tick_time->tm_hour;
+		if (!clock_is_24h_style()) 
+		{
+			hour = hour % 12;
+			if (hour == 0) 
+			{
+				hour = 12;
+			}	
+		}	
+		int value = hour %100;
+		
+		currentH1 = value / 10;
+		currentH2 = value % 10;
+		value = t->tick_time->tm_min %100;
 		currentM1 = value / 10;
 		currentM2 = value % 10;
 	
@@ -666,27 +665,17 @@ void handle_init(AppContextRef ctx) {
 	timeColonFrame = GRect(40,timePosY,8,timeHeight);
 	timeMinuteTensFrame = GRect(48,timePosY,timeWidth,timeHeight);
 	timeMinuteOnesFrame = GRect(68,timePosY,timeWidth, timeHeight);
+	
 	//run into transition	
+	
 	Watchface();
-	//DayTransition(Leads into BG Display)	
+	
+	//DayTransition()//(Leads into BG Display)	
 }
 
-void pbl_main(void *params)
+
+void handle_deinit(AppContextRef ctx) 
 {
-    PebbleAppHandlers handlers =
-    {
-        .init_handler = &handle_init,
-        .tick_info =
-        {
-            .tick_handler = &handle_minute_tick,
-            .tick_units = MINUTE_UNIT
-        }
-    };
-
-    app_event_loop(params, &handlers);
-}
-
-void handle_deinit(AppContextRef ctx) {
 	(void)ctx;
 		bmp_deinit_container(&background_image);
 		bmp_deinit_container(&imgWeather);
@@ -699,8 +688,25 @@ void handle_deinit(AppContextRef ctx) {
 			bmp_deinit_container(&imgTime_BLACK[i]);
 			bmp_deinit_container(&imgTime_WHITE[i]);
 		}
-    }
+		fonts_unload_custom_font(fontDate);
+		fonts_unload_custom_font(fontAbbr);
+}
 
+void pbl_main(void *params)
+{
+    PebbleAppHandlers handlers =
+    {
+        .init_handler = &handle_init,
+        .tick_info =
+        {
+            .tick_handler = &handle_minute_tick,
+            .tick_units = MINUTE_UNIT
+        },
+		.deinit_handler = &handle_deinit // called on close, do clean up in there
+    };
+
+    app_event_loop(params, &handlers);
+}
 
 
 /*
