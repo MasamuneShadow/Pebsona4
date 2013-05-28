@@ -37,16 +37,24 @@ Night		=	6
 
 Window window;
 /*=========Layers============*/
-TextLayer 	layerWord_DATE; //white
-BitmapLayer layerTime_WHITE;
-BitmapLayer layerTime_BLACK;
-BitmapLayer layerDate_WHITE;
-BitmapLayer layerDate_BLACK;
+TextLayer 	layerDate; //white
+TextLayer 	layerDateWord; //white
+
+BitmapLayer layerTimeH1_WHITE;
+BitmapLayer layerTimeH2_WHITE;
+BitmapLayer layerTimeM1_WHITE;
+BitmapLayer layerTimeM2_WHITE;
+BitmapLayer layerTimeH1_BLACK;
+BitmapLayer layerTimeH2_BLACK;
+BitmapLayer layerTimeM1_BLACK;
+BitmapLayer layerTimeM2_BLACK;
+
+BitmapLayer layerColon_WHITE;
+BitmapLayer layerColon_BLACK;
+
 BitmapLayer layerWord_WHITE;
 BitmapLayer layerWord_BLACK;
 BitmapLayer layerWeather;
-//BitmapLayer layerWeather_WHITE;
-//BitmapLayer layerWeather_BLACK;
 
 Layer transition_layer;
 //Word Transitions
@@ -68,29 +76,33 @@ static const int DIGIT_IMAGE_RESOURCE_IDS[] = {
   RESOURCE_ID_IMAGE_DIGIT_9
 };
 
+static const int DIGIT_IMAGE_RESOURCE_IDS_INVERT[] = {
+  RESOURCE_ID_IMAGE_DIGIT_0_INVERT,
+  RESOURCE_ID_IMAGE_DIGIT_1_INVERT,
+  RESOURCE_ID_IMAGE_DIGIT_2_INVERT,
+  RESOURCE_ID_IMAGE_DIGIT_3_INVERT,
+  RESOURCE_ID_IMAGE_DIGIT_4_INVERT,
+  RESOURCE_ID_IMAGE_DIGIT_5_INVERT,
+  RESOURCE_ID_IMAGE_DIGIT_6_INVERT,
+  RESOURCE_ID_IMAGE_DIGIT_7_INVERT,
+  RESOURCE_ID_IMAGE_DIGIT_8_INVERT,
+  RESOURCE_ID_IMAGE_DIGIT_9_INVERT
+};
+
 BmpContainer background_image;
 
 #define TOTAL_TIME_DIGITS 4
-/*static BmpContainer imgTime_BLACK[TOTAL_TIME_DIGITS];
+static BmpContainer imgTime_BLACK[TOTAL_TIME_DIGITS];
 static int imgTimeResourceIds_BLACK[TOTAL_TIME_DIGITS];
 
 static BmpContainer imgTime_WHITE[TOTAL_TIME_DIGITS];
-static int imgTimeResourceIds_WHITE[TOTAL_TIME_DIGITS];*/
-
-//also uses 4 digits
-/*static BmpContainer imgDate_BLACK[TOTAL_TIME_DIGITS];
-static int imgDateResourceIds_BLACK[TOTAL_TIME_DIGITS];
-
-static BmpContainer imgDate_WHITE[TOTAL_TIME_DIGITS];
-static int imgDateResourceIds_WHITE[TOTAL_TIME_DIGITS];*/
+static int imgTimeResourceIds_WHITE[TOTAL_TIME_DIGITS];
 
 BmpContainer imgWord_BLACK;
 BmpContainer imgWord_WHITE;
+BmpContainer imgColon_BLACK;
+BmpContainer imgColon_WHITE;
 BmpContainer imgWeather;
-//BmpContainer imgWeather_BLACK;
-//BmpContainer imgWeather_WHITE;
-BmpContainer slash;
-BmpContainer colon;
 
 /*=========Bools============*/
 bool isDayTransitioning = false;
@@ -98,27 +110,50 @@ bool isWordTransitioning = false;
 //bool isTransitioning = false;
 //bool isWordImageOnly = false;
 
-int current_word;
-int previous_word;
-int previous_hour;
-int previous_day;
-int current_weather;
-int previous_weather;
+
+int currentWord;
+//int currentMinute;
+int currentM1;
+int currentM2;
+//int currentHour;
+int currentH1;
+int currentH2;
+int currentDay;
+int currentWeather;
+
+int previousWord;
+//int previousMinute;
+int previousHour;
+int previousDay;
+int previousWeather;
 
 bool getWeather = true;
 GRect wordFrame;
 GRect weatherFrame;
 GRect timeFrame; //ha!
+GRect timeHourTensFrame;
+GRect timeHourOnesFrame;
+GRect timeColonFrame;
+GRect timeMinuteTensFrame;
+GRect timeMinuteOnesFrame;
 GRect dateFrame;
 GRect wordDateFrame;
 
-GFont font_date;
-ResHandle res_d;
+GFont fontDate;
+GFont fontAbbr;
+ResHandle resDate;
+ResHandle resAbbr;
 
 #define DATE "Date"
 #define TIME "Time"
 #define WORD "Word"
 #define WEATHER "Weather"
+#define ALL "All"
+	
+#define timeWidth 19
+#define timeHeight 19
+#define timePosY 55
+
 //Day Transitions
 /*
 Layer DayGraphic
@@ -140,42 +175,42 @@ void square_layer_update_callback(Layer *me, GContext* ctx) {
 
 void SetWordImage()
 {	
-	if (current_word == 0)//midnight
+	if (currentWord == 0)//midnight
 	{
 		bmp_init_container(RESOURCE_ID_IMAGE_TIME_MIDNIGHT,&imgWord_BLACK);
 		bmp_init_container(RESOURCE_ID_IMAGE_TIME_MIDNIGHT_INVERT,&imgWord_WHITE);
 	}		
-	else if (current_word == 1) //early morning
+	else if (currentWord == 1) //early morning
 	{
 		bmp_init_container(RESOURCE_ID_IMAGE_TIME_EARLY_MORNING,&imgWord_BLACK);
 		bmp_init_container(RESOURCE_ID_IMAGE_TIME_EARLY_MORNING_INVERT,&imgWord_WHITE);
 	}
-	else if(current_word == 2) //morning
+	else if(currentWord == 2) //morning
 	{	
 		bmp_init_container(RESOURCE_ID_IMAGE_TIME_MORNING,&imgWord_BLACK);
 		bmp_init_container(RESOURCE_ID_IMAGE_TIME_MORNING_INVERT,&imgWord_WHITE);
 	}
-	else if(current_word == 3)//lunchtime
+	else if(currentWord == 3)//lunchtime
 	{
 		bmp_init_container(RESOURCE_ID_IMAGE_TIME_LUNCHTIME,&imgWord_BLACK);
 		bmp_init_container(RESOURCE_ID_IMAGE_TIME_LUNCHTIME_INVERT,&imgWord_WHITE);
-		}
-	else if(current_word == 4)//afternoon
+	}
+	else if(currentWord == 4)//afternoon
 	{
 		bmp_init_container(RESOURCE_ID_IMAGE_TIME_AFTERNOON,&imgWord_BLACK);
 		bmp_init_container(RESOURCE_ID_IMAGE_TIME_AFTERNOON_INVERT,&imgWord_WHITE);
 	}
-	else if(current_word == 5)//evening
+	else if(currentWord == 5)//evening
 	{
 		bmp_init_container(RESOURCE_ID_IMAGE_TIME_EVENING,&imgWord_BLACK);
 		bmp_init_container(RESOURCE_ID_IMAGE_TIME_EVENING_INVERT,&imgWord_WHITE);
 	}
-	else if(current_word == 6)//night
+	else if(currentWord == 6)//night
 	{
 		bmp_init_container(RESOURCE_ID_IMAGE_TIME_NIGHT,&imgWord_BLACK);
 		bmp_init_container(RESOURCE_ID_IMAGE_TIME_NIGHT_INVERT,&imgWord_WHITE);
 	}
-	else if(current_word == 7)//Unknown
+	else if(currentWord == 7)//Unknown
 	{
 		bmp_init_container(RESOURCE_ID_IMAGE_TIME_BLANK,&imgWord_BLACK);
 		bmp_init_container(RESOURCE_ID_IMAGE_TIME_BLANK,&imgWord_WHITE);
@@ -184,105 +219,89 @@ void SetWordImage()
 
 void SetWeatherImage()
 {	
-	if (current_weather == 0)//unknown
+	if (currentWeather == 0)//unknown
 	{
 		bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_UNKNOWN,&imgWeather);
-		//bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_UNKNOWN,&imgWeather_BLACK);
-		//bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_UNKNOWN_INVERT,&imgWeather_WHITE);
 	}		
-	else if (current_weather == 1) //sun
+	else if (currentWeather == 1) //sun
 	{
 		bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_SUN,&imgWeather);
-		//bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_SUN,&imgWeather_BLACK);
-		//bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_SUN_INVERT,&imgWeather_WHITE);
 	}
-	else if(current_weather == 2) //rain
+	else if(currentWeather == 2) //rain
 	{	
 		bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_RAIN,&imgWeather);
-		//bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_RAIN,&imgWeather_BLACK);
-		//bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_RAIN_INVERT,&imgWeather_WHITE);
 	}
-	else if(current_weather == 3)//cloud
+	else if(currentWeather == 3)//cloud
 	{
 		bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_CLOUD,&imgWeather);
-		//bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_CLOUD,&imgWeather_BLACK);
-		//bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_CLOUD_INVERT,&imgWeather_WHITE);
 	}
-	else if(current_weather == 4)//snow
+	else if(currentWeather == 4)//snow
 	{
 		bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_SNOW,&imgWeather);
-		//bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_SNOW,&imgWeather_BLACK);
-		//bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_SNOW_INVERT,&imgWeather_WHITE);
 	}
 }
 
-/*void SetDateImage()
-{	
-	if (current_weather == 0)//unknown
-	{
-		bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_UNKNOWN,&imgWeather_BLACK);
-		bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_UNKNOWN_INVERT,&imgWeather_WHITE);
-	}		
-	else if (current_weather == 1) //sun
-	{
-		bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_SUN,&imgWeather_BLACK);
-		bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_SUN_INVERT,&imgWeather_WHITE);
-	}
-	else if(current_weather == 2) //rain
-	{	
-		bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_RAIN,&imgWeather_BLACK);
-		bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_RAIN_INVERT,&imgWeather_WHITE);
-	}
-	else if(current_weather == 3)//cloud
-	{
-		bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_CLOUD,&imgWeather_BLACK);
-		bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_CLOUD_INVERT,&imgWeather_WHITE);
-		}
-	else if(current_weather == 4)//snow
-	{
-		bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_SNOW,&imgWeather_BLACK);
-		bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_SNOW_INVERT,&imgWeather_WHITE);
-	}
-}
 
 void SetTimeImage()
 {	
-	if (current_weather == 0)//unknown
-	{
-		bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_UNKNOWN,&imgWeather_BLACK);
-		bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_UNKNOWN_INVERT,&imgWeather_WHITE);
-	}		
-	else if (current_weather == 1) //sun
-	{
-		bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_SUN,&imgWeather_BLACK);
-		bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_SUN_INVERT,&imgWeather_WHITE);
-	}
-	else if(current_weather == 2) //rain
-	{	
-		bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_RAIN,&imgWeather_BLACK);
-		bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_RAIN_INVERT,&imgWeather_WHITE);
-	}
-	else if(current_weather == 3)//cloud
-	{
-		bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_CLOUD,&imgWeather_BLACK);
-		bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_CLOUD_INVERT,&imgWeather_WHITE);
-		}
-	else if(current_weather == 4)//snow
-	{
-		bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_SNOW,&imgWeather_BLACK);
-		bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_SNOW_INVERT,&imgWeather_WHITE);
-	}
-}*/
-
+	bmp_init_container(DIGIT_IMAGE_RESOURCE_IDS[currentH1],&imgTime_BLACK[0]);
+	bmp_init_container(DIGIT_IMAGE_RESOURCE_IDS[currentH2],&imgTime_BLACK[1]);
+	bmp_init_container(DIGIT_IMAGE_RESOURCE_IDS[currentM1],&imgTime_BLACK[2]);
+	bmp_init_container(DIGIT_IMAGE_RESOURCE_IDS[currentM2],&imgTime_BLACK[3]);
+	
+	bmp_init_container(DIGIT_IMAGE_RESOURCE_IDS_INVERT[currentH1],&imgTime_WHITE[0]);
+	bmp_init_container(DIGIT_IMAGE_RESOURCE_IDS_INVERT[currentH2],&imgTime_WHITE[1]);
+	bmp_init_container(DIGIT_IMAGE_RESOURCE_IDS_INVERT[currentM1],&imgTime_WHITE[2]);
+	bmp_init_container(DIGIT_IMAGE_RESOURCE_IDS_INVERT[currentM2],&imgTime_WHITE[3]);
+	
+	bmp_init_container(RESOURCE_ID_IMAGE_DIGIT_COLON,&imgColon_BLACK);
+	bmp_init_container(RESOURCE_ID_IMAGE_DIGIT_COLON_INVERT,&imgColon_WHITE);
+}
 
 void RemoveAndDeIntBmp(char* bitmap)
 {
-	if (strcmp(bitmap,WORD) == 0)
+	if (strcmp(bitmap,WORD) == 0 || strcmp(bitmap,ALL) == 0)
 	{
 		layer_remove_from_parent(&layerWord_WHITE.layer);
 		layer_remove_from_parent(&layerWord_BLACK.layer);
 		bmp_deinit_container(&imgWord_WHITE);
 		bmp_deinit_container(&imgWord_BLACK);
+	}
+	
+	if (strcmp (bitmap,WEATHER) == 0 || strcmp(bitmap,ALL) == 0)
+	{
+		layer_remove_from_parent(&layerWeather.layer);
+		bmp_deinit_container(&imgWeather);
+	}
+	
+	if (strcmp (bitmap,TIME) == 0 || strcmp(bitmap,ALL) == 0)
+	{
+		layer_remove_from_parent(&layerTimeH1_WHITE.layer);
+		layer_remove_from_parent(&layerTimeH2_WHITE.layer);
+		layer_remove_from_parent(&layerTimeM1_WHITE.layer);
+		layer_remove_from_parent(&layerTimeM2_WHITE.layer);
+		
+		layer_remove_from_parent(&layerColon_WHITE.layer);
+		layer_remove_from_parent(&layerColon_BLACK.layer);
+		
+		layer_remove_from_parent(&layerTimeH1_BLACK.layer);
+		layer_remove_from_parent(&layerTimeH2_BLACK.layer);
+		layer_remove_from_parent(&layerTimeM1_BLACK.layer);
+		layer_remove_from_parent(&layerTimeM2_BLACK.layer);
+		
+				
+		bmp_deinit_container(&imgTime_WHITE[0]);
+		bmp_deinit_container(&imgTime_WHITE[1]);
+		bmp_deinit_container(&imgTime_WHITE[2]);
+		bmp_deinit_container(&imgTime_WHITE[3]);
+		
+		bmp_deinit_container(&imgColon_WHITE);
+		bmp_deinit_container(&imgColon_BLACK);
+		
+		bmp_deinit_container(&imgTime_BLACK[0]);
+		bmp_deinit_container(&imgTime_BLACK[1]);
+		bmp_deinit_container(&imgTime_BLACK[2]);
+		bmp_deinit_container(&imgTime_BLACK[3]);
 	}
 }
 		
@@ -319,130 +338,162 @@ void SetBitmap(char* bitmap)
 		bitmap_layer_set_compositing_mode(&layerWeather, GCompOpOr);
 		layer_add_child(&window.layer, &layerWeather.layer);
 		layer_mark_dirty(&layerWeather.layer);		
-		/*bitmap_layer_init(&layerWeather_WHITE,weatherFrame);
-		bitmap_layer_set_bitmap(&layerWeather_WHITE,&imgWeather_WHITE.bmp);
-		bitmap_layer_set_background_color(&layerWeather_WHITE,GColorClear);
-		bitmap_layer_set_compositing_mode(&layerWeather_WHITE, GCompOpClear);
-		layer_add_child(&window.layer, &layerWeather_WHITE.layer);
-		layer_mark_dirty(&layerWeather_WHITE.layer);*/
-
-		/*// takes the white and doesn't draw it if it itercets with a black?
-		bitmap_layer_init(&layerWeather_BLACK,WeatherFrame);
-		bitmap_layer_set_bitmap(&layerWeather_BLACK, &imgWeather_BLACK.bmp); //or .layer?
-		layer_add_child(&window.layer, &layerWeather_BLACK.layer);
-		bitmap_layer_set_background_color(&layerWeather_BLACK,GColorClear);
-		bitmap_layer_set_compositing_mode(&layerWeather_BLACK, GCompOpOr);
-		layer_mark_dirty(&layerWeather_BLACK.layer);*/
 	}
-	else if (strcmp(bitmap,DATE) == 0)
-	{
-		//do 4-5 (slash) times for each digit set
-		/*SetDateImage();			
-		bitmap_layer_init(&layerDate_WHITE,DateFrame);
-		bitmap_layer_set_bitmap(&layerDate_WHITE,&imgDate_WHITE.bmp);
-		bitmap_layer_set_background_color(&layerDate_WHITE,GColorClear);
-		bitmap_layer_set_compositing_mode(&layerDate_WHITE, GCompOpClear);
-		layer_add_child(&window.layer, &layerDate_WHITE.layer);
-		layer_mark_dirty(&layerDate_WHITE.layer);	
-
-		// takes the white and doesn't draw it if it itercets with a black?
-		bitmap_layer_init(&layerDate_BLACK,DateFrame);
-		bitmap_layer_set_bitmap(&layerDate_BLACK, &imgDate_BLACK.bmp); //or .layer?
-		layer_add_child(&window.layer, &layerDate_BLACK.layer);
-		bitmap_layer_set_background_color(&layerDate_BLACK,GColorClear);
-		bitmap_layer_set_compositing_mode(&layerDate_BLACK, GCompOpOr);
-		layer_mark_dirty(&layerDate_BLACK.layer);*/	
-	}
+	/*else if (strcmp(bitmap,DATE) == 0){}*/
 	else if (strcmp(bitmap,TIME) == 0)
 	{
-		/*SetTimeImage();			
-		//do 4 times (1 for each digit)
-		bitmap_layer_init(&layerTime_WHITE,TimeFrame);
-		bitmap_layer_set_bitmap(&layerTime_WHITE,&imgTime_WHITE.bmp);
-		bitmap_layer_set_background_color(&layerTime_WHITE,GColorClear);
-		bitmap_layer_set_compositing_mode(&layerTime_WHITE, GCompOpClear);
-		layer_add_child(&window.layer, &layerTime_WHITE.layer);
-		layer_mark_dirty(&layerTime_WHITE.layer);	
-
-		// takes the white and doesn't draw it if it itercets with a black?
-		bitmap_layer_init(&layerTime_BLACK,TimeFrame);
-		bitmap_layer_set_bitmap(&layerTime_BLACK, &imgTime_BLACK.bmp); //or .layer?
-		layer_add_child(&window.layer, &layerTime_BLACK.layer);
-		bitmap_layer_set_background_color(&layerTime_BLACK,GColorClear);
-		bitmap_layer_set_compositing_mode(&layerTime_BLACK, GCompOpOr);
-		layer_mark_dirty(&layerTime_BLACK.layer);*/
+		SetTimeImage();			
+		//do 2 times (1 white, 1 black)
+		//do 4 times (1 for each digit) 
+		//8 times total (yuck)
+	//White 1
+		bitmap_layer_init(&layerTimeH1_WHITE,timeHourTensFrame);
+		bitmap_layer_set_bitmap(&layerTimeH1_WHITE, &imgTime_WHITE[0].bmp); //or .layer?
+		bitmap_layer_set_background_color(&layerTimeH1_WHITE,GColorClear);
+		bitmap_layer_set_compositing_mode(&layerTimeH1_WHITE, GCompOpClear);
+		layer_add_child(&window.layer, &layerTimeH1_WHITE.layer);
+		layer_mark_dirty(&layerTimeH1_WHITE.layer);
+	//White 2		
+		bitmap_layer_init(&layerTimeH2_WHITE,timeHourOnesFrame);
+		bitmap_layer_set_bitmap(&layerTimeH2_WHITE, &imgTime_WHITE[1].bmp); //or .layer?
+		bitmap_layer_set_background_color(&layerTimeH2_WHITE,GColorClear);
+		bitmap_layer_set_compositing_mode(&layerTimeH2_WHITE, GCompOpClear);
+		layer_add_child(&window.layer, &layerTimeH2_WHITE.layer);
+		layer_mark_dirty(&layerTimeH2_WHITE.layer);
+	//White 3
+		bitmap_layer_init(&layerTimeM1_WHITE,timeMinuteTensFrame);
+		bitmap_layer_set_bitmap(&layerTimeM1_WHITE, &imgTime_WHITE[2].bmp); //or .layer?
+		bitmap_layer_set_background_color(&layerTimeM1_WHITE,GColorClear);
+		bitmap_layer_set_compositing_mode(&layerTimeM1_WHITE, GCompOpClear);
+		layer_add_child(&window.layer, &layerTimeM1_WHITE.layer);
+		layer_mark_dirty(&layerTimeM1_WHITE.layer);
+	//White 4	
+		bitmap_layer_init(&layerTimeM2_WHITE,timeMinuteOnesFrame);
+		bitmap_layer_set_bitmap(&layerTimeM2_WHITE, &imgTime_WHITE[3].bmp); //or .layer?
+		bitmap_layer_set_background_color(&layerTimeM2_WHITE,GColorClear);
+		bitmap_layer_set_compositing_mode(&layerTimeM2_WHITE, GCompOpClear);
+		layer_add_child(&window.layer, &layerTimeM2_WHITE.layer);
+		layer_mark_dirty(&layerTimeM2_WHITE.layer);
+	//Colon White
+		bitmap_layer_init(&layerColon_WHITE,timeColonFrame);
+		bitmap_layer_set_bitmap(&layerColon_WHITE, &imgColon_WHITE.bmp); //or .layer?
+		bitmap_layer_set_background_color(&layerColon_WHITE,GColorClear);
+		bitmap_layer_set_compositing_mode(&layerColon_WHITE, GCompOpClear);
+		layer_add_child(&window.layer, &layerColon_WHITE.layer);
+		layer_mark_dirty(&layerColon_WHITE.layer);
+		
+	//Colon Black
+		bitmap_layer_init(&layerColon_BLACK,timeColonFrame);
+		bitmap_layer_set_bitmap(&layerColon_BLACK, &imgColon_BLACK.bmp); //or .layer?
+		bitmap_layer_set_background_color(&layerColon_BLACK,GColorClear);
+		bitmap_layer_set_compositing_mode(&layerColon_BLACK, GCompOpOr);
+		layer_add_child(&window.layer, &layerColon_BLACK.layer);
+		layer_mark_dirty(&layerColon_BLACK.layer);
+	//Black 1		
+		bitmap_layer_init(&layerTimeH1_BLACK,timeHourTensFrame);
+		bitmap_layer_set_bitmap(&layerTimeH1_BLACK, &imgTime_BLACK[0].bmp); //or .layer?
+		bitmap_layer_set_background_color(&layerTimeH1_BLACK,GColorClear);
+		bitmap_layer_set_compositing_mode(&layerTimeH1_BLACK, GCompOpOr);
+		layer_add_child(&window.layer, &layerTimeH1_BLACK.layer);
+		layer_mark_dirty(&layerTimeH1_BLACK.layer);
+	//Black 2
+		bitmap_layer_init(&layerTimeH2_BLACK,timeHourOnesFrame);
+		bitmap_layer_set_bitmap(&layerTimeH2_BLACK, &imgTime_BLACK[1].bmp); //or .layer?
+		bitmap_layer_set_background_color(&layerTimeH2_BLACK,GColorClear);
+		bitmap_layer_set_compositing_mode(&layerTimeH2_BLACK, GCompOpOr);
+		layer_add_child(&window.layer, &layerTimeH2_BLACK.layer);
+		layer_mark_dirty(&layerTimeH2_BLACK.layer);
+	//Black 3	
+		bitmap_layer_init(&layerTimeM1_BLACK,timeMinuteTensFrame);
+		bitmap_layer_set_bitmap(&layerTimeM1_BLACK, &imgTime_BLACK[2].bmp); //or .layer?
+		bitmap_layer_set_background_color(&layerTimeM1_BLACK,GColorClear);
+		bitmap_layer_set_compositing_mode(&layerTimeM1_BLACK, GCompOpOr);
+		layer_add_child(&window.layer, &layerTimeM1_BLACK.layer);
+		layer_mark_dirty(&layerTimeM1_BLACK.layer);
+	//Black 4
+		bitmap_layer_init(&layerTimeM2_BLACK,timeMinuteOnesFrame);
+		bitmap_layer_set_bitmap(&layerTimeM2_BLACK, &imgTime_BLACK[3].bmp); //or .layer?
+		bitmap_layer_set_background_color(&layerTimeM2_BLACK,GColorClear);
+		bitmap_layer_set_compositing_mode(&layerTimeM2_BLACK, GCompOpOr);
+		layer_add_child(&window.layer, &layerTimeM2_BLACK.layer);
+		layer_mark_dirty(&layerTimeM2_BLACK.layer);
 	}
 }
-/*
-void SetTime()
-{
-	//set_container_image(&date_digits_images[3], &date_layer, date_resource_ids[3], MED_DIGIT_IMAGE_RESOURCE_IDS[month%10], GPoint(0, 84));
-}
-void GetAndSetTime()
-{}*/
 
 void GetAndSetWeather()
 {
     //get info from phone,
 	getWeather = false;
-	current_weather = 1;
-    if (current_weather != previous_weather)
+	currentWeather = 1;
+    if (currentWeather != previousWeather)
 	{
 		SetBitmap(WEATHER);
-		previous_weather = current_weather;
+		previousWeather = currentWeather;
 	}
 }
 
-void GetAndSetCurrentWord(PblTm* current_time)
+void GetAndSetCurrentWord(PblTm* currentTime)
 {
-    switch (current_time->tm_hour)
+    switch (currentTime->tm_hour)
     {
         case 0:
-            current_word = 0; //midnight
+            currentWord = 0; //midnight
             break;
         case 1:
         case 2:
         case 3:
         case 4:
         case 5:
-            current_word = 1; //early morning
+            currentWord = 1; //early morning
             break;
         case 6:
         case 7:
         case 8:
         case 9:
         case 10:
-            current_word = 2; //morning
+            currentWord = 2; //morning
             break;
         case 11:
 		case 12:
 		case 13:
-            current_word = 3;//lunchtime
+            currentWord = 3;//lunchtime
             break;
         case 14:
         case 15:
         case 16:
 		case 17:
-            current_word = 4;//afternoon
+            currentWord = 4;//afternoon
             break;
         case 18:
         case 19:
 		case 20:
-            current_word = 5;//evening
+            currentWord = 5;//evening
             break;
         case 21:
         case 22:
         case 23:
         case 24:
-            current_word = 6;//night
+            currentWord = 6;//night
             break;
     }
-    
-    
-    if (previous_word != current_word)
+	int hour = currentTime->tm_hour;
+	if (!clock_is_24h_style()) 
+	{
+		hour = hour % 12;
+    	if (hour == 0) 
+		{
+      		hour = 12;
+		}	
+	}	
+	int value = hour %100;
+	
+	currentH1 = value / 10;
+	currentH2 = value % 10;
+	
+    if (previousWord != currentWord)
     {
 		SetBitmap(WORD);
-		previous_word = current_word;
+		previousWord = currentWord;
     }
     
 }
@@ -468,7 +519,7 @@ watchface
 
 void CheckTransitionTime()
 {
-	if (current_word != previous_word)
+	if (currentWord != previousWord)
         isWordTransitioning = true;
 	isWordTransitioning = false; //DEBUG -- for time being
 }
@@ -477,47 +528,56 @@ void handle_minute_tick(AppContextRef ctx, PebbleTickEvent *t) {
   (void)t;
   (void)ctx;
 	
-	static char date_text[] = "Xxx";
-	string_format_time(date_text, sizeof(date_text), "%a", t->tick_time);
-	text_layer_set_text(&layerWord_DATE, date_text);
+	static char dateText[] = "00 00";
+	string_format_time(dateText, sizeof(dateText), "%m/%d", t->tick_time);
+	text_layer_set_text(&layerDate, dateText);
+	
+	static char dateWordText[] = " Xxx";
+	string_format_time(dateWordText, sizeof(dateWordText), " %a", t->tick_time);
+	text_layer_set_text(&layerDateWord, dateWordText);
 	  
-	static char time_text[] = "00:00";
-	char *time_format;
-	time_format = clock_is_24h_style() ? "%R" : "%I:%M";
-	string_format_time(time_text, sizeof(time_text), time_format, t->tick_time);
+	static char timeText[] = "00:00";
+	char *timeFormat;
+	timeFormat = clock_is_24h_style() ? "%R" : "%I:%M";
+	string_format_time(timeText, sizeof(timeText), timeFormat, t->tick_time);
 	//CheckTransitionTime();
 	//if (!isDayTransition && !isWordTransition)
 	//{
 		// Kludge to handle lack of non-padded hour format string
 		// for twelve hour clock.
-		if (!clock_is_24h_style() && (time_text[0] == '0'))
+		if (!clock_is_24h_style() && (timeText[0] == '0'))
 		{
-			memmove(time_text, &time_text[1], sizeof(time_text) - 1);
+			memmove(timeText, &timeText[1], sizeof(timeText) - 1);
 		}
+		//not right, should be by itself but don't want to pass around w/e
 		
-		// update everything accordingly
-		//static char date_text[] = "00 00";
-		//string_format_time(date_text, sizeof(date_text), "%m　%d", t->tick_time);
-		//SetBitmap("Date",date_text);
-		//SetBitmap("Time", time_text);
-		
-		if (previous_hour != time_text[1])
+		if (previousHour != timeText[1])
 		{
-			previous_hour = time_text[1];
+			currentDay = 	t->tick_time->tm_mday;
+			previousHour = timeText[1];
 			GetAndSetCurrentWord(t->tick_time);
 			//if within check for weather()
 			if (getWeather)
 			{GetAndSetWeather();}
 		}
+		
+		if (previousDay != currentDay){}
+	
+		//hours are set in the GetAndSetCurrentWord(only will change when it will)
+		int value = t->tick_time->tm_min %100;
+		currentM1 = value / 10;
+		currentM2 = value % 10;
+	
+		SetBitmap(TIME);
 	//}
 }
 
 void RefreshAll()
 {
-	//SetBitmap(DATE);
-    //SetBitmap(TIME);
+    SetBitmap(TIME);
 	SetBitmap(WORD);
-	//SetBitmap(WEATHER);
+	//if within check, 
+	// SetBitmap(WEATHER); //DEBUG = OFF
 }
 	
 	
@@ -537,16 +597,36 @@ void Watchface()//DISPLAYS THE "WATCH PART" OR, NO TRANSITIONS ARE RUNNING
   	weatherDestination.origin.x = 50;*/
 	
 	//Date Text Layer init
-	res_d = resource_get_handle(RESOURCE_ID_FONT_DAYS_21);
-	font_date = fonts_load_custom_font(res_d);
-	text_layer_init(&layerWord_DATE, window.layer.frame);
-    text_layer_set_text_color(&layerWord_DATE, GColorWhite);
-    text_layer_set_background_color(&layerWord_DATE, GColorClear);
-    layer_set_frame(&layerWord_DATE.layer,wordDateFrame);
-	//text_layer_set_text_alignment(&layerWord_DATE,GTextAlignmentRight);
-    text_layer_set_font(&layerWord_DATE, font_date);
-    layer_add_child(&window.layer, &layerWord_DATE.layer);
+	resDate = resource_get_handle(RESOURCE_ID_FONT_DAYS_26);
+	fontDate = fonts_load_custom_font(resDate);
+	resAbbr = resource_get_handle(RESOURCE_ID_FONT_DAYS_13);
+	fontAbbr = fonts_load_custom_font(resAbbr);
 	
+	text_layer_init(&layerDate, window.layer.frame);
+    text_layer_set_text_color(&layerDate, GColorWhite);
+    text_layer_set_background_color(&layerDate, GColorClear);
+    layer_set_frame(&layerDate.layer,dateFrame);
+    text_layer_set_font(&layerDate, fontDate);
+    layer_add_child(&window.layer, &layerDate.layer);
+	
+	text_layer_init(&layerDateWord, window.layer.frame);
+    text_layer_set_text_color(&layerDateWord, GColorWhite);
+    text_layer_set_background_color(&layerDateWord, GColorClear);
+    layer_set_frame(&layerDateWord.layer,wordDateFrame);
+    text_layer_set_font(&layerDateWord, fontAbbr);
+    layer_add_child(&window.layer, &layerDateWord.layer);	
+	
+	//DIGIT_IMAGE_RESOURCE_IDS
+  	for (int i = 0; i < TOTAL_TIME_DIGITS; i++) {
+	    bmp_init_container(RESOURCE_ID_IMAGE_DIGIT_0, &imgTime_BLACK[i]);
+	    imgTimeResourceIds_BLACK[i] = -1;
+    }
+
+	for (int i = 0; i < TOTAL_TIME_DIGITS; i++) {
+	    bmp_init_container(RESOURCE_ID_IMAGE_DIGIT_0_INVERT, &imgTime_WHITE[i]);
+	    imgTimeResourceIds_WHITE[i] = -1;
+    }
+
 	RefreshAll();
 }
 	
@@ -561,23 +641,31 @@ void handle_init(AppContextRef ctx) {
     bmp_init_container(RESOURCE_ID_IMAGE_BACKGROUND,  &background_image);
 	
 	layer_add_child(&window.layer,&background_image.layer.layer);
-	
-		
-    //font stuff
-
     
     //SETUP INIT STUFF
-    previous_hour = 99;
-    previous_word = 99;
-    current_word = 1;
-	previous_weather = 99;
-	current_weather = 0; //uNKNOWN
-	wordDateFrame = GRect(0,80,64,40);
-	wordFrame = GRect(0,40,144,21);
+	previousWeather = 99;
+	//previousMinute = 99;
+    previousHour = 99;
+    previousWord = 99;
+    previousDay = 99;
+	
+	currentWeather = 0; //uNKNOWN
+	//currentMinute = 88;
+	//currentHour = 88;
+	currentWord = 7;
+	currentDay = 88;
+	
+	dateFrame = GRect(0,2,100,26);
+	wordDateFrame = GRect(100,10,50,26);
+	wordFrame = GRect(0,32,144,21);
 	weatherFrame = GRect(53,87,75,75);
-	timeFrame = GRect(0,66,144,30);
-	dateFrame = GRect(0,5,100,30);
-
+	
+	timeFrame = GRect(0,timePosY,144,25);
+	timeHourTensFrame = GRect(0,timePosY,timeWidth,timeHeight);
+	timeHourOnesFrame = GRect(20,timePosY,timeWidth,timeHeight);
+	timeColonFrame = GRect(40,timePosY,8,timeHeight);
+	timeMinuteTensFrame = GRect(48,timePosY,timeWidth,timeHeight);
+	timeMinuteOnesFrame = GRect(68,timePosY,timeWidth, timeHeight);
 	//run into transition	
 	Watchface();
 	//DayTransition(Leads into BG Display)	
@@ -601,21 +689,16 @@ void pbl_main(void *params)
 void handle_deinit(AppContextRef ctx) {
 	(void)ctx;
 		bmp_deinit_container(&background_image);
+		bmp_deinit_container(&imgWeather);
 		bmp_deinit_container(&imgWord_BLACK);
 		bmp_deinit_container(&imgWord_WHITE);
-		bmp_deinit_container(&imgWeather);
-		//bmp_deinit_container(&imgWeather_BLACK);
-		//bmp_deinit_container(&imgWeather_WHITE);
-		bmp_deinit_container(&slash);
-		bmp_deinit_container(&colon);
-		
-		/*for (int i = 0; i < TOTAL_TIME_DIGITS; i++) {
-			bmp_deinit_container(&imgTime[i]);
+		bmp_deinit_container(&imgColon_BLACK);
+		bmp_deinit_container(&imgColon_WHITE);
+		for (int i = 0; i < TOTAL_TIME_DIGITS; i++)
+		{
+			bmp_deinit_container(&imgTime_BLACK[i]);
+			bmp_deinit_container(&imgTime_WHITE[i]);
 		}
-		
-		for (int i = 0; i < TOTAL_TIME_DIGITS; i++) {
-			bmp_deinit_container(&imgDate[i]);
-		}		*/
     }
 
 

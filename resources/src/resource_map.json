@@ -1,6 +1,61 @@
 {
     "media": [
         {
+            "defName": "IMAGE_DIGIT_0_INVERT",
+            "type": "png",
+            "file": "images/0_invert.png"
+        },
+        {
+            "defName": "IMAGE_DIGIT_1_INVERT",
+            "type": "png",
+            "file": "images/1_invert.png"
+        },
+        {
+            "defName": "IMAGE_DIGIT_2_INVERT",
+            "type": "png",
+            "file": "images/2_invert.png"
+        },
+        {
+            "defName": "IMAGE_DIGIT_3_INVERT",
+            "type": "png",
+            "file": "images/3_invert.png"
+        },
+        {
+            "defName": "IMAGE_DIGIT_4_INVERT",
+            "type": "png",
+            "file": "images/4_invert.png"
+        },
+        {
+            "defName": "IMAGE_DIGIT_5_INVERT",
+            "type": "png",
+            "file": "images/5_invert.png"
+        },
+        {
+            "defName": "IMAGE_DIGIT_6_INVERT",
+            "type": "png",
+            "file": "images/6_invert.png"
+        },
+        {
+            "defName": "IMAGE_DIGIT_7_INVERT",
+            "type": "png",
+            "file": "images/7_invert.png"
+        },
+        {
+            "defName": "IMAGE_DIGIT_8_INVERT",
+            "type": "png",
+            "file": "images/8_invert.png"
+        },
+        {
+            "defName": "IMAGE_DIGIT_9_INVERT",
+            "type": "png",
+            "file": "images/9_invert.png"
+        },
+        {
+            "defName": "IMAGE_DIGIT_COLON_INVERT",
+            "type": "png",
+            "file": "images/colon_invert.png"
+        },
+        {
             "defName": "IMAGE_TIME_MORNING_INVERT",
             "type": "png",
             "file": "images/morning_invert.png"
@@ -34,11 +89,6 @@
             "defName": "IMAGE_TIME_MIDNIGHT_INVERT",
             "type": "png",
             "file": "images/midnight_invert.png"
-        },
-        {
-            "defName": "IMAGE_DIGIT_SLASH",
-            "type": "png",
-            "file": "images/slash.PNG"
         },
         {
             "defName": "IMAGE_DIGIT_COLON",
@@ -166,15 +216,14 @@
             "file": "images/menu_icon.png"
         },
         {
-            "trackingAdjust": -1,
-            "characterRegex": "[0-9:.]",
-            "defName": "FONT_DAYS_18",
+            "characterRegex": "[a-z A-Z.]",
+            "defName": "FONT_DAYS_13",
             "type": "font",
             "file": "fonts/Days.ttf"
         },
         {
             "trackingAdjust": -1,
-            "defName": "FONT_DAYS_21",
+            "defName": "FONT_DAYS_26",
             "type": "font",
             "file": "fonts/Days.ttf"
         },
