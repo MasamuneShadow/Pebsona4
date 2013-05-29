@@ -149,7 +149,7 @@ ResHandle resAbbr;
 #define WORD "Word"
 #define WEATHER "Weather"
 #define ALL "All"
-	
+
 #define timeWidth 19
 #define timeHeight 19
 #define timePosY 55
@@ -248,12 +248,12 @@ void SetTimeImage()
 	bmp_init_container(DIGIT_IMAGE_RESOURCE_IDS[currentH2],&imgTime_BLACK[1]);
 	bmp_init_container(DIGIT_IMAGE_RESOURCE_IDS[currentM1],&imgTime_BLACK[2]);
 	bmp_init_container(DIGIT_IMAGE_RESOURCE_IDS[currentM2],&imgTime_BLACK[3]);
-	
+
 	bmp_init_container(DIGIT_IMAGE_RESOURCE_IDS_INVERT[currentH1],&imgTime_WHITE[0]);
 	bmp_init_container(DIGIT_IMAGE_RESOURCE_IDS_INVERT[currentH2],&imgTime_WHITE[1]);
 	bmp_init_container(DIGIT_IMAGE_RESOURCE_IDS_INVERT[currentM1],&imgTime_WHITE[2]);
 	bmp_init_container(DIGIT_IMAGE_RESOURCE_IDS_INVERT[currentM2],&imgTime_WHITE[3]);
-	
+
 	bmp_init_container(RESOURCE_ID_IMAGE_DIGIT_COLON,&imgColon_BLACK);
 	bmp_init_container(RESOURCE_ID_IMAGE_DIGIT_COLON_INVERT,&imgColon_WHITE);
 }
@@ -267,44 +267,44 @@ void RemoveAndDeIntBmp(char* bitmap)
 		bmp_deinit_container(&imgWord_WHITE);
 		bmp_deinit_container(&imgWord_BLACK);
 	}
-	
+
 	if (strcmp (bitmap,WEATHER) == 0 || strcmp(bitmap,ALL) == 0)
 	{
 		layer_remove_from_parent(&layerWeather.layer);
 		bmp_deinit_container(&imgWeather);
 	}
-	
+
 	if (strcmp (bitmap,TIME) == 0 || strcmp(bitmap,ALL) == 0)
 	{
 		layer_remove_from_parent(&layerTimeH1_WHITE.layer);
 		layer_remove_from_parent(&layerTimeH2_WHITE.layer);
 		layer_remove_from_parent(&layerTimeM1_WHITE.layer);
 		layer_remove_from_parent(&layerTimeM2_WHITE.layer);
-		
+
 		layer_remove_from_parent(&layerColon_WHITE.layer);
 		layer_remove_from_parent(&layerColon_BLACK.layer);
-		
+
 		layer_remove_from_parent(&layerTimeH1_BLACK.layer);
 		layer_remove_from_parent(&layerTimeH2_BLACK.layer);
 		layer_remove_from_parent(&layerTimeM1_BLACK.layer);
 		layer_remove_from_parent(&layerTimeM2_BLACK.layer);
-		
-				
+
+
 		bmp_deinit_container(&imgTime_WHITE[0]);
 		bmp_deinit_container(&imgTime_WHITE[1]);
 		bmp_deinit_container(&imgTime_WHITE[2]);
 		bmp_deinit_container(&imgTime_WHITE[3]);
-		
+
 		bmp_deinit_container(&imgColon_WHITE);
 		bmp_deinit_container(&imgColon_BLACK);
-		
+
 		bmp_deinit_container(&imgTime_BLACK[0]);
 		bmp_deinit_container(&imgTime_BLACK[1]);
 		bmp_deinit_container(&imgTime_BLACK[2]);
 		bmp_deinit_container(&imgTime_BLACK[3]);
 	}
 }
-		
+
 //for bitmap only (black and white)
 //bitmap = layer that we want to manipulate
 void SetBitmap(char* bitmap)
@@ -320,7 +320,7 @@ void SetBitmap(char* bitmap)
 		bitmap_layer_set_compositing_mode(&layerWord_WHITE, GCompOpClear);
 		layer_add_child(&window.layer, &layerWord_WHITE.layer);
 		layer_mark_dirty(&layerWord_WHITE.layer);
-		
+
 		// takes the white and doesn't draw it if it itercets with a black?
 		bitmap_layer_init(&layerWord_BLACK,wordFrame);
 		bitmap_layer_set_bitmap(&layerWord_BLACK, &imgWord_BLACK.bmp); //or .layer?
@@ -381,7 +381,7 @@ void SetBitmap(char* bitmap)
 		bitmap_layer_set_compositing_mode(&layerColon_WHITE, GCompOpClear);
 		layer_add_child(&window.layer, &layerColon_WHITE.layer);
 		layer_mark_dirty(&layerColon_WHITE.layer);
-		
+
 	//Colon Black
 		bitmap_layer_init(&layerColon_BLACK,timeColonFrame);
 		bitmap_layer_set_bitmap(&layerColon_BLACK, &imgColon_BLACK.bmp); //or .layer?
@@ -455,9 +455,9 @@ void GetAndSetCurrentWord(PblTm* currentTime)
             break;
         case 11:
 		case 12:
-		case 13:
             currentWord = 3;//lunchtime
             break;
+		case 13:
         case 14:
         case 15:
         case 16:
@@ -476,7 +476,7 @@ void GetAndSetCurrentWord(PblTm* currentTime)
             currentWord = 6;//night
             break;
     }
-	
+
     if (previousWord != currentWord)
     {
 		SetBitmap(WORD);
@@ -514,15 +514,15 @@ void CheckTransitionTime()
 void handle_minute_tick(AppContextRef ctx, PebbleTickEvent *t) {
   (void)t;
   (void)ctx;
-	
+
 	static char dateText[] = "00 00";
 	string_format_time(dateText, sizeof(dateText), "%m/%d", t->tick_time);
 	text_layer_set_text(&layerDate, dateText);
-	
+
 	static char dateWordText[] = " Xxx";
 	string_format_time(dateWordText, sizeof(dateWordText), " %a", t->tick_time);
 	text_layer_set_text(&layerDateWord, dateWordText);
-	  
+
 	static char timeText[] = "00:00";
 	char *timeFormat;
 	timeFormat = clock_is_24h_style() ? "%R" : "%I:%M";
@@ -537,20 +537,19 @@ void handle_minute_tick(AppContextRef ctx, PebbleTickEvent *t) {
 			memmove(timeText, &timeText[1], sizeof(timeText) - 1);
 		}
 		//not right, should be by itself but don't want to pass around w/e
-		
-		if (previousHour != timeText[1])
+		int hour = t->tick_time->tm_hour;
+		if (previousHour != hour)
 		{
 			currentDay = 	t->tick_time->tm_mday;
-			previousHour = timeText[1];
+			previousHour = hour;
 			GetAndSetCurrentWord(t->tick_time);
 			//if within check for weather()
 			if (getWeather)
 			{GetAndSetWeather();}
 		}
-		
+
 		if (previousDay != currentDay){}
-	
-		int hour = t->tick_time->tm_hour;
+
 		if (!clock_is_24h_style()) 
 		{
 			hour = hour % 12;
@@ -560,13 +559,13 @@ void handle_minute_tick(AppContextRef ctx, PebbleTickEvent *t) {
 			}	
 		}	
 		int value = hour %100;
-		
+
 		currentH1 = value / 10;
 		currentH2 = value % 10;
 		value = t->tick_time->tm_min %100;
 		currentM1 = value / 10;
 		currentM2 = value % 10;
-	
+
 		SetBitmap(TIME);
 	//}
 }
@@ -578,8 +577,8 @@ void RefreshAll()
 	//if within check, 
 	// SetBitmap(WEATHER); //DEBUG = OFF
 }
-	
-	
+
+
 void Watchface()//DISPLAYS THE "WATCH PART" OR, NO TRANSITIONS ARE RUNNING
 {
 //set
@@ -588,33 +587,33 @@ void Watchface()//DISPLAYS THE "WATCH PART" OR, NO TRANSITIONS ARE RUNNING
 //time init
 //layer_proc_update word
 //layer_proc_update_weather
-	 
 
-	
+
+
 	/*weatherDestination = layer_get_frame(&weather_BLACK.layer.layer);
 	weatherDestination.origin.y = 75;
   	weatherDestination.origin.x = 50;*/
-	
+
 	//Date Text Layer init
 	resDate = resource_get_handle(RESOURCE_ID_FONT_DAYS_26);
 	fontDate = fonts_load_custom_font(resDate);
 	resAbbr = resource_get_handle(RESOURCE_ID_FONT_DAYS_13);
 	fontAbbr = fonts_load_custom_font(resAbbr);
-	
+
 	text_layer_init(&layerDate, window.layer.frame);
     text_layer_set_text_color(&layerDate, GColorWhite);
     text_layer_set_background_color(&layerDate, GColorClear);
     layer_set_frame(&layerDate.layer,dateFrame);
     text_layer_set_font(&layerDate, fontDate);
     layer_add_child(&window.layer, &layerDate.layer);
-	
+
 	text_layer_init(&layerDateWord, window.layer.frame);
     text_layer_set_text_color(&layerDateWord, GColorWhite);
     text_layer_set_background_color(&layerDateWord, GColorClear);
     layer_set_frame(&layerDateWord.layer,wordDateFrame);
     text_layer_set_font(&layerDateWord, fontAbbr);
     layer_add_child(&window.layer, &layerDateWord.layer);	
-	
+
 	//DIGIT_IMAGE_RESOURCE_IDS
   	for (int i = 0; i < TOTAL_TIME_DIGITS; i++) {
 	    bmp_init_container(RESOURCE_ID_IMAGE_DIGIT_0, &imgTime_BLACK[i]);
@@ -628,17 +627,17 @@ void Watchface()//DISPLAYS THE "WATCH PART" OR, NO TRANSITIONS ARE RUNNING
 
 	RefreshAll();
 }
-	
+
 void handle_init(AppContextRef ctx) {
     (void) ctx;
 
     window_init(&window, "PEBSONA4");
     window_stack_push(&window, true /* Animated */);
     window_set_background_color(&window, GColorClear);
-	
+
     resource_init_current_app(&APP_RESOURCES);
     bmp_init_container(RESOURCE_ID_IMAGE_BACKGROUND,  &background_image);
-	
+
 	layer_add_child(&window.layer,&background_image.layer.layer);
     
     //SETUP INIT STUFF
@@ -647,29 +646,29 @@ void handle_init(AppContextRef ctx) {
     previousHour = 99;
     previousWord = 99;
     previousDay = 99;
-	
+
 	currentWeather = 0; //uNKNOWN
 	//currentMinute = 88;
 	//currentHour = 88;
 	currentWord = 7;
 	currentDay = 88;
-	
+
 	dateFrame = GRect(0,2,100,26);
 	wordDateFrame = GRect(100,10,50,26);
 	wordFrame = GRect(0,32,144,21);
 	weatherFrame = GRect(53,87,75,75);
-	
+
 	timeFrame = GRect(0,timePosY,144,25);
 	timeHourTensFrame = GRect(0,timePosY,timeWidth,timeHeight);
 	timeHourOnesFrame = GRect(20,timePosY,timeWidth,timeHeight);
 	timeColonFrame = GRect(40,timePosY,8,timeHeight);
 	timeMinuteTensFrame = GRect(48,timePosY,timeWidth,timeHeight);
 	timeMinuteOnesFrame = GRect(68,timePosY,timeWidth, timeHeight);
-	
+
 	//run into transition	
-	
+
 	Watchface();
-	
+
 	//DayTransition()//(Leads into BG Display)	
 }
 
