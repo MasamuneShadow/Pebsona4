@@ -10,7 +10,7 @@ enum LinkStatus
 
 enum LinkStatus __linkStatus = LinkStatusUnknown;
 
-extern TextLayer date_layer;
+extern TextLayer layerDate;
 
 void link_monitor_ping()
 {
@@ -37,7 +37,7 @@ void link_monitor_handle_failure(int error)
 #ifdef DEBUG
 		default:
 			//Unrecognised failure reason. Debug.
-			text_layer_set_text(&date_layer, itoa(error));
+			text_layer_set_text(&layerDate, itoa(error));
 #endif
 	}
 

@@ -9,10 +9,12 @@
 #include "link_monitor.h"
 #include "config.h"
 	
-#define MY_UUID { 0x01, 0x6E, 0x11, 0x1F, 0xB2, 0x60, 0x4E, 0x80, 0xA7, 0xCD, 0x78, 0x35, 0xA0, 0x31, 0xE3, 0xF3 }
+//#define MY_UUID { 0x01, 0x6E, 0x11, 0x1F, 0xB2, 0x60, 0x4E, 0x80, 0xA7, 0xCD, 0x78, 0x35, 0xA0, 0x31, 0xE3, 0xF3 }
+#define MY_UUID { 0x91, 0x41, 0xB6, 0x28, 0xBC, 0x89, 0x49, 0x8E, 0xB1, 0x47, 0x04, 0x9F, 0x49, 0xC0, 0x99, 0xAD }
+//find a way to have this work without using this id!
 PBL_APP_INFO(MY_UUID,
              "Pebsona4", "Masamune_Shadow",
-             1, 0, /* App version */
+             1, 4, /* App version */
              RESOURCE_ID_IMAGE_MENU_ICON,
              APP_INFO_WATCH_FACE);
 
@@ -219,7 +221,7 @@ ResHandle resAbbr;
 #define timeWidth 19
 #define timeHeight 19
 #define timePosY 55
-bool getHTTP = true;
+//bool getHTTP = true;
 //Day Transitions
 /*
 Layer DayGraphic
@@ -301,11 +303,11 @@ void SetWeatherImage()
 	{
 		bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_SNOW,&imgWeather);
 	}
-	else if(currentWeather >= 4 && currentWeather <= 10)//cloud
+	else if(currentWeather >= 4 && currentWeather < 10)//cloud
 	{
 		bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_CLOUD,&imgWeather);
 	}
-	else if (currentWeather == 11)
+	else if (currentWeather >= 10)
 	{
 		bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_UNKNOWN,&imgWeather);
 	}
@@ -409,6 +411,11 @@ void SetBitmap(char* bitmap)
 		bitmap_layer_set_compositing_mode(&layerWeather, GCompOpOr);
 		layer_add_child(&window.layer, &layerWeather.layer);
 		layer_mark_dirty(&layerWeather.layer);		
+		if (previousWeather != currentWeather)
+		{
+			previousWeather = currentWeather;
+			vibes_short_pulse(); //just a little notification that the weather has changed.
+		}
 	}
 	/*else if (strcmp(bitmap,DATE) == 0){}*/
 	else if (strcmp(bitmap,TIME) == 0)
@@ -495,14 +502,12 @@ void request_weather();
 
 void failed(int32_t cookie, int http_status, void* context) {
 	if(cookie == 0 || cookie == WEATHER_HTTP_COOKIE) {
-		//currentWeather = 9;
+		currentWeather = 10;
 		SetBitmap(WEATHER);
 		//weather_layer_set_icon(&weather_layer, WEATHER_ICON_NO_WEATHER);
 		//text_layer_set_text(&weather_layer.temp_layer, "---°");
 	}
-//vibes_short_pulse();
 	link_monitor_handle_failure(http_status);
-
 	//Re-request the location and subsequently weather on next minute tick
 	located = false;
 }
@@ -510,8 +515,13 @@ void failed(int32_t cookie, int http_status, void* context) {
 void success(int32_t cookie, int http_status, DictionaryIterator* received, void* context) {
 	if(cookie != WEATHER_HTTP_COOKIE) return;
 	Tuple* icon_tuple = dict_find(received, WEATHER_KEY_ICON);
-	if(icon_tuple) {
-		currentWeather = icon_tuple->value->int8;
+	int icon = icon_tuple->value->int8;
+	if(icon >= 0 && icon < 10) {
+		currentWeather = icon;
+	}
+	else
+	{
+		currentWeather = 10;
 	}
 	SetBitmap(WEATHER);
 	Tuple* temperature_tuple = dict_find(received, WEATHER_KEY_TEMPERATURE);
@@ -652,14 +662,15 @@ void handle_minute_tick(AppContextRef ctx, PebbleTickEvent *t) {
 		
 		if(!located || !(t->tick_time->tm_min % 15))
 		{
-			//Every 15 minutes, request updated weather
-			http_location_request();
-			//request_weather();
+			//Every 15 minutes, request updated weather			
+			//http_location_request();
+			request_weather();
 		}
 		else
 		{
 			//Every minute, ping the phone
 			link_monitor_ping();
+			
 		}
 		
 	}
@@ -835,8 +846,17 @@ void handle_init(AppContextRef ctx) {
 	timeMinuteTensFrame = GRect(48,timePosY,timeWidth,timeHeight);
 	timeMinuteOnesFrame = GRect(68,timePosY,timeWidth, timeHeight);
 
+	PblTm tm;
+    PebbleTickEvent t;
 	//run into transition	
 	http_register_callbacks((HTTPCallbacks){.failure=failed,.success=success,.reconnect=reconnect,.location=location}, (void*)ctx);
+	
+		// Refresh time
+get_time(&tm);
+    t.tick_time = &tm;
+    t.units_changed = SECOND_UNIT | MINUTE_UNIT | HOUR_UNIT | DAY_UNIT;
+
+handle_minute_tick(ctx, &t);
 	
 	Watchface();
 
@@ -868,22 +888,24 @@ void pbl_main(void *params)
     PebbleAppHandlers handlers =
     {
         .init_handler = &handle_init,
+        .deinit_handler = &handle_deinit,
         .tick_info =
         {
             .tick_handler = &handle_minute_tick,
             .tick_units = MINUTE_UNIT
         },
-		.deinit_handler = &handle_deinit, // called on close, do clean up in there
-		.messaging_info = {
-		.buffer_sizes = {
+			.messaging_info = {
+			.buffer_sizes = {
 			.inbound = 124,
 			.outbound = 124,
+				}
 			}
-		}
     };
 
     app_event_loop(params, &handlers);
 }
+
+
 
 void request_weather() {
 	if(!located) {
@@ -894,7 +916,7 @@ void request_weather() {
 	DictionaryIterator *body;
 	HTTPResult result = http_out_get("http://www.zone-mr.net/api/weather.php", WEATHER_HTTP_COOKIE, &body);
 	if(result != HTTP_OK) {
-		currentWeather = 11;
+		currentWeather = 10;
 		SetBitmap(WEATHER);
 		return;
 	}
@@ -903,7 +925,7 @@ void request_weather() {
 	dict_write_cstring(body, WEATHER_KEY_UNIT_SYSTEM, UNIT_SYSTEM);
 	// Send it.
 	if(http_out_send() != HTTP_OK) {
-		currentWeather = 11;
+		currentWeather = 10;
 		SetBitmap(WEATHER);
 		return;
 	}
