@@ -1,11 +1,6 @@
 {
     "media": [
         {
-            "defName": "IMAGE_BLACK",
-            "type": "png",
-            "file": "images/black.png"
-        },
-        {
             "defName": "IMAGE_DIGIT_0_INVERT",
             "type": "png",
             "file": "images/0_invert.png"
