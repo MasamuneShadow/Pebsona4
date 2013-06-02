@@ -9,7 +9,7 @@
 #include "link_monitor.h"
 #include "config.h"
 	
-//#define MY_UUID { 0x01, 0x6E, 0x11, 0x1F, 0xB2, 0x60, 0x4E, 0x80, 0xA7, 0xCD, 0x78, 0x35, 0xA0, 0x31, 0xE3, 0xF3 }
+//#define MY_UUID { 0x01, 0x6E, 0x11, 0x1F, 0xB2, 0x60, 0x4E, 0x80, 0xA7, 0xCD, 0x78, 0x35, 0xA0, 0x31, 0xE3, 0xF3 } //OG PEBSONA 4
 #define MY_UUID { 0x91, 0x41, 0xB6, 0x28, 0xBC, 0x89, 0x49, 0x8E, 0xB1, 0x47, 0x04, 0x9F, 0x49, 0xC0, 0x99, 0xAD }
 //find a way to have this work without using this id!
 PBL_APP_INFO(MY_UUID,
@@ -22,14 +22,37 @@ PBL_APP_INFO(MY_UUID,
 #define WEATHER_KEY_LATITUDE 1
 #define WEATHER_KEY_LONGITUDE 2
 #define WEATHER_KEY_UNIT_SYSTEM 3
+//#define WEATHER_KEY_TIME 3
 
 // Received variables
 #define WEATHER_KEY_ICON 1
 #define WEATHER_KEY_TEMPERATURE 2
-
+	
 #define WEATHER_HTTP_COOKIE 1949327671
 #define TIME_HTTP_COOKIE 1131038282
 	
+#define DATE "Date"
+#define TIME "Time"
+#define WORD "Word"
+#define WEATHER "Weather"
+#define ALL "All"
+
+#define timeWidth 19
+#define timeHeight 19
+#define timePosY 55
+	
+#define	dateFrame  (GRect(0,2,100,26))
+#define	wordDateFrame  (GRect(100,10,50,26))
+#define	wordFrame  (GRect(0,32,144,21))
+#define	weatherFrame  (GRect(53,87,75,75))
+
+#define	timeFrame  (GRect(0,timePosY,144,25))
+#define	timeHourTensFrame  (GRect(0,timePosY,timeWidth,timeHeight))
+#define	timeHourOnesFrame  (GRect(20,timePosY,timeWidth,timeHeight))
+#define	timeColonFrame  (GRect(40,timePosY,8,timeHeight))
+#define	timeMinuteTensFrame  (GRect(48,timePosY,timeWidth,timeHeight))
+#define	timeMinuteOnesFrame  (GRect(68,timePosY,timeWidth, timeHeight))
+
 //Once weather support gets introduced, the "Sunny" icon will change to reflect said weather.
 //ingame there are:
 /*
@@ -195,33 +218,13 @@ int previousHour;
 int previousDay;
 int previousWeather;
 
-//bool getWeather = true;
-GRect wordFrame;
-GRect weatherFrame;
-GRect timeFrame; //ha!
-GRect timeHourTensFrame;
-GRect timeHourOnesFrame;
-GRect timeColonFrame;
-GRect timeMinuteTensFrame;
-GRect timeMinuteOnesFrame;
-GRect dateFrame;
-GRect wordDateFrame;
-
 GFont fontDate;
 GFont fontAbbr;
 ResHandle resDate;
 ResHandle resAbbr;
 
-#define DATE "Date"
-#define TIME "Time"
-#define WORD "Word"
-#define WEATHER "Weather"
-#define ALL "All"
-
-#define timeWidth 19
-#define timeHeight 19
-#define timePosY 55
-//bool getHTTP = true;
+bool httpFailed;
+bool Initializing = true;
 //Day Transitions
 /*
 Layer DayGraphic
@@ -329,6 +332,7 @@ void SetTimeImage()
 
 	bmp_init_container(RESOURCE_ID_IMAGE_DIGIT_COLON,&imgColon_BLACK);
 	bmp_init_container(RESOURCE_ID_IMAGE_DIGIT_COLON_INVERT,&imgColon_WHITE);
+	
 }
 
 void RemoveAndDeIntBmp(char* bitmap)
@@ -382,7 +386,10 @@ void RemoveAndDeIntBmp(char* bitmap)
 //bitmap = layer that we want to manipulate
 void SetBitmap(char* bitmap)
 {
-	RemoveAndDeIntBmp(bitmap);
+	if (!Initializing)
+	{
+		RemoveAndDeIntBmp(bitmap);
+	}
 	if (strcmp(bitmap,WORD) == 0)
 	{    
 		SetWordImage();			
@@ -414,7 +421,7 @@ void SetBitmap(char* bitmap)
 		if (previousWeather != currentWeather)
 		{
 			previousWeather = currentWeather;
-			vibes_short_pulse(); //just a little notification that the weather has changed.
+			//vibes_short_pulse(); //just a little notification that the weather has changed.
 		}
 	}
 	/*else if (strcmp(bitmap,DATE) == 0){}*/
@@ -502,12 +509,13 @@ void request_weather();
 
 void failed(int32_t cookie, int http_status, void* context) {
 	if(cookie == 0 || cookie == WEATHER_HTTP_COOKIE) {
-		currentWeather = 10;
+		currentWeather = 11;
 		SetBitmap(WEATHER);
 		//weather_layer_set_icon(&weather_layer, WEATHER_ICON_NO_WEATHER);
 		//text_layer_set_text(&weather_layer.temp_layer, "---°");
 	}
 	link_monitor_handle_failure(http_status);
+	httpFailed = true;
 	//Re-request the location and subsequently weather on next minute tick
 	located = false;
 }
@@ -521,14 +529,14 @@ void success(int32_t cookie, int http_status, DictionaryIterator* received, void
 	}
 	else
 	{
-		currentWeather = 10;
+		currentWeather = 11;
 	}
 	SetBitmap(WEATHER);
-	Tuple* temperature_tuple = dict_find(received, WEATHER_KEY_TEMPERATURE);
+	Tuple* temperature_tuple = dict_find(received, WEATHER_KEY_TEMPERATURE );
 	if(temperature_tuple) {
-		//weather_layer_set_temperature(&weather_layer, temperature_tuple->value->int16);
+		
 	}
-
+	httpFailed = false;
 	link_monitor_handle_success();
 }
 
@@ -554,8 +562,6 @@ void GetAndSetCurrentWord(PblTm* currentTime)
         case 0:
             currentWord = 0; //midnight
             break;
-        case 1:
-        case 2:
         case 3:
         case 4:
         case 5:
@@ -588,6 +594,8 @@ void GetAndSetCurrentWord(PblTm* currentTime)
         case 22:
         case 23:
         case 24:
+		case 1:
+		case 2:
             currentWord = 6;//night
             break;
     }
@@ -599,7 +607,12 @@ void GetAndSetCurrentWord(PblTm* currentTime)
     }
     
 }
-
+/*void FormatTime(PblTm* currentTime)
+{
+	formattedTime = [YYYY]-[MM]-[DD]T[HH]:[MM]:[SS]
+}
+formattedTime = [YYYY]-[MM]-[DD]T[HH]:[MM]:[SS]*/
+	
 void handle_minute_tick(AppContextRef ctx, PebbleTickEvent *t) {
   (void)t;
   (void)ctx;
@@ -615,12 +628,21 @@ void handle_minute_tick(AppContextRef ctx, PebbleTickEvent *t) {
 
 	static char dateWordText[] = " Xxx";
 	string_format_time(dateWordText, sizeof(dateWordText), " %a", t->tick_time);
+	
+	//uppercase it, should be by itself, but fuck it.
+	for (int i = 0; dateWordText[i] != 0; i++) {
+        if (dateWordText[i] >= 'a' && dateWordText[i] <= 'z') {
+            dateWordText[i] -= 0x20;
+        }
+    }
+	
 	text_layer_set_text(&layerDateWord, dateWordText);
 
 	static char timeText[] = "00:00";
 	char *timeFormat;
 	timeFormat = clock_is_24h_style() ? "%R" : "%I:%M";
 	string_format_time(timeText, sizeof(timeText), timeFormat, t->tick_time);
+
 	if (!isTransitioning)
 	{
 		// Kludge to handle lack of non-padded hour format string
@@ -660,17 +682,15 @@ void handle_minute_tick(AppContextRef ctx, PebbleTickEvent *t) {
 
 		SetBitmap(TIME);
 		
-		if(!located || !(t->tick_time->tm_min % 15))
+		if(!located || !(t->tick_time->tm_min % 60))
 		{
-			//Every 15 minutes, request updated weather			
-			//http_location_request();
+			//Every 60 minutes, request updated weather			
 			request_weather();
 		}
-		else
+		else if (httpFailed)
 		{
 			//Every minute, ping the phone
 			link_monitor_ping();
-			
 		}
 		
 	}
@@ -680,8 +700,7 @@ void RefreshAll()
 {
     SetBitmap(TIME);
 	SetBitmap(WORD);
-	//if within check, 
-	// SetBitmap(WEATHER); //DEBUG = OFF
+	SetBitmap(WEATHER);
 }
 
 
@@ -733,7 +752,10 @@ void Watchface()//DISPLAYS THE "WATCH PART" OR, NO TRANSITIONS ARE RUNNING
 	    imgTimeResourceIds_WHITE[i] = -1;
     }
 	
-	RefreshAll();
+	if (!Initializing)
+	{
+		RefreshAll();
+	}
 }
 
 
@@ -822,6 +844,7 @@ void handle_init(AppContextRef ctx) {
 	layer_add_child(&window.layer,&background_image.layer.layer);
     
     //SETUP INIT STUFF
+	
 
 		//previousMinute = 99;
     previousHour = 99;
@@ -833,37 +856,27 @@ void handle_init(AppContextRef ctx) {
 	currentWord = 99;
 	currentDay = 88;
 	currentWeather = 11; //uNKNOWN
+
 	
-	dateFrame = GRect(0,2,100,26);
-	wordDateFrame = GRect(100,10,50,26);
-	wordFrame = GRect(0,32,144,21);
-	weatherFrame = GRect(53,87,75,75);
-
-	timeFrame = GRect(0,timePosY,144,25);
-	timeHourTensFrame = GRect(0,timePosY,timeWidth,timeHeight);
-	timeHourOnesFrame = GRect(20,timePosY,timeWidth,timeHeight);
-	timeColonFrame = GRect(40,timePosY,8,timeHeight);
-	timeMinuteTensFrame = GRect(48,timePosY,timeWidth,timeHeight);
-	timeMinuteOnesFrame = GRect(68,timePosY,timeWidth, timeHeight);
-
+	Watchface();
+	//DayTransition();
+	
 	PblTm tm;
     PebbleTickEvent t;
 	//run into transition	
 	http_register_callbacks((HTTPCallbacks){.failure=failed,.success=success,.reconnect=reconnect,.location=location}, (void*)ctx);
 	
 		// Refresh time
-get_time(&tm);
+	get_time(&tm);
     t.tick_time = &tm;
     t.units_changed = SECOND_UNIT | MINUTE_UNIT | HOUR_UNIT | DAY_UNIT;
 
-handle_minute_tick(ctx, &t);
+	handle_minute_tick(ctx, &t);
 	
-	Watchface();
-
-	//DayTransition();
+	Initializing = false;
+	
 	//(Leads into BG Display)	
 }
-
 
 void handle_deinit(AppContextRef ctx) 
 {
@@ -905,8 +918,7 @@ void pbl_main(void *params)
     app_event_loop(params, &handlers);
 }
 
-
-
+	
 void request_weather() {
 	if(!located) {
 		http_location_request();
@@ -914,19 +926,28 @@ void request_weather() {
 	}
 	// Build the HTTP request
 	DictionaryIterator *body;
+	//HTTPResult result = http_out_get("http://masamuneshadow.herobo.com/api/weather_current.php", WEATHER_HTTP_COOKIE, &body);
+	//HTTPResult result = http_out_get("http://pwdb.kathar.in/pebble/weather3.php", WEATHER_HTTP_COOKIE, &body);	
 	HTTPResult result = http_out_get("http://www.zone-mr.net/api/weather.php", WEATHER_HTTP_COOKIE, &body);
 	if(result != HTTP_OK) {
-		currentWeather = 10;
+		currentWeather = 11;
 		SetBitmap(WEATHER);
 		return;
 	}
 	dict_write_int32(body, WEATHER_KEY_LATITUDE, our_latitude);
 	dict_write_int32(body, WEATHER_KEY_LONGITUDE, our_longitude);
 	dict_write_cstring(body, WEATHER_KEY_UNIT_SYSTEM, UNIT_SYSTEM);
+	//Get formatted Time(formattedTime);
+	//dict_write_cstring(body, WEATHER_KEY_TIME, formattedTime);
+	//HTTP_TIME_KEY
 	// Send it.
 	if(http_out_send() != HTTP_OK) {
-		currentWeather = 10;
+		currentWeather = 11;
 		SetBitmap(WEATHER);
 		return;
 	}
 }
+
+//get weather @ 8
+//get weather at 6 pm?
+//if mornweather == pmweather use non-split image.
