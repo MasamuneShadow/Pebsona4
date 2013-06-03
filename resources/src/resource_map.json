@@ -1,6 +1,16 @@
 {
     "media": [
         {
+            "defName": "IMAGE_SQUARE_SUN_INVERT",
+            "type": "png",
+            "file": "images/square_sun_invert.png"
+        },
+        {
+            "defName": "IMAGE_SQUARE_SUN",
+            "type": "png",
+            "file": "images/square_sun.png"
+        },
+        {
             "defName": "IMAGE_DIGIT_0_INVERT",
             "type": "png",
             "file": "images/0_invert.png"
@@ -216,7 +226,7 @@
             "file": "images/menu_icon.png"
         },
         {
-            "characterRegex": "[a-z A-Z.]",
+            "characterRegex": "[a-z A-Z 0-9.]",
             "defName": "FONT_DAYS_13",
             "type": "font",
             "file": "fonts/Days.ttf"
@@ -224,6 +234,13 @@
         {
             "trackingAdjust": -1,
             "defName": "FONT_DAYS_26",
+            "type": "font",
+            "file": "fonts/Days.ttf"
+        },
+        {
+            "trackingAdjust": -1,
+            "characterRegex": "[0-9.]",
+            "defName": "FONT_DAYS_42",
             "type": "font",
             "file": "fonts/Days.ttf"
         },
