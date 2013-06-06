@@ -22,11 +22,14 @@ PBL_APP_INFO(MY_UUID,
 #define WEATHER_KEY_LATITUDE 1
 #define WEATHER_KEY_LONGITUDE 2
 #define WEATHER_KEY_UNIT_SYSTEM 3
-//#define WEATHER_KEY_TIME 3
+//#define WEATHER_KEY_TIME 4
 
 // Received variables
 #define WEATHER_KEY_ICON 1
 #define WEATHER_KEY_TEMPERATURE 2
+
+//#define WEATHER_KEY_DAILY_TIME 0
+//#define WEATHER_KEY_DAILY_ICON 2
 	
 #define WEATHER_HTTP_COOKIE 1949327671
 #define TIME_HTTP_COOKIE 1131038282
@@ -42,7 +45,7 @@ PBL_APP_INFO(MY_UUID,
 #define timePosY 55
 	
 #define	dateFrame  (GRect(0,2,100,26))
-#define	wordDateFrame  (GRect(100,10,50,26))
+#define	wordDateFrame  (GRect(80,10,50,26))
 #define	wordFrame  (GRect(0,32,144,21))
 #define	weatherFrame  (GRect(53,87,75,75))
 
@@ -60,26 +63,37 @@ PBL_APP_INFO(MY_UUID,
 #define openAnimationDelay 250
 #define closingAnimationDelay 3000
 #define slideAnimationDelay 250
+#define instantDuration 1
 #define LAYER_TEXT_MONTH_FRAME (GRect(45,0,50,45))
 #define LAYER_TEXT_YEAR_FRAME (GRect(45,50,50,28))
 #define START_RECT (GRect(67,0,0,168))
 #define END_RECT (GRect(46,0,52,168))
 //all of the images will be of the same size as the square, but thanks to the inverts, it'll work out w/ trans.
-#define DAY_0_IMAGE_FRAME (GRect(0,119,0,38))
+#define DAY_0_IMAGE_FRAME (GRect(-50,119,0,38))
 #define DAY_1_IMAGE_FRAME (GRect(1,119,40,38))
 #define DAY_2_IMAGE_FRAME (GRect(53,119,40,38))//highlighed frame
 #define	DAY_3_IMAGE_FRAME (GRect(105,119,40,38))
 #define DAY_4_IMAGE_FRAME (GRect(170,119,40,38))
-#define DAY_0_WORD_FRAME (GRect(0,119,0,38))
-#define DAY_1_WORD_FRAME (GRect(5,85,35,10))
-#define DAY_2_WORD_FRAME (GRect(57,85,35,10))
-#define DAY_3_WORD_FRAME (GRect(110,85,35,10))
-#define DAY_4_WORD_FRAME (GRect(170,85,35,10))	
-#define DAY_0_DAY_FRAME   (GRect(0,95,0,15))
-#define DAY_1_DAY_FRAME   (GRect(5,95,35,15))
-#define DAY_2_DAY_FRAME   (GRect(57,95,35,15))
-#define DAY_3_DAY_FRAME   (GRect(110,95,35,15))
-#define DAY_4_DAY_FRAME   (GRect(170,95,35,15))
+/*#define DAY_0_WORD_FRAME (GRect(0,85,0,25))
+#define DAY_1_WORD_FRAME (GRect(5,85,35,25))
+#define DAY_2_WORD_FRAME (GRect(57,85,35,25))
+#define DAY_3_WORD_FRAME (GRect(110,85,35,25))
+#define DAY_4_WORD_FRAME (GRect(170,85,35,25))	
+#define DAY_0_DAY_FRAME   (GRect(0,65,0,35))
+#define DAY_1_DAY_FRAME   (GRect(5,65,35,35))
+#define DAY_2_DAY_FRAME   (GRect(57,65,35,35))
+#define DAY_3_DAY_FRAME   (GRect(110,65,35,35))
+#define DAY_4_DAY_FRAME   (GRect(170,65,35,35))*/
+#define DAY_0_WORD_FRAME (GRect(-50,95,0,18))
+#define DAY_1_WORD_FRAME (GRect(3,95,45,18))
+#define DAY_2_WORD_FRAME (GRect(50,95,45,18))
+#define DAY_3_WORD_FRAME (GRect(100,95,45,18))
+#define DAY_4_WORD_FRAME (GRect(170,95,45,18))	
+#define DAY_0_DAY_FRAME  (GRect(-50,78,0,25))
+#define DAY_1_DAY_FRAME  (GRect(3,78,45,25))
+#define DAY_2_DAY_FRAME  (GRect(50,78,45,25))
+#define DAY_3_DAY_FRAME  (GRect(100,78,45,25))
+#define DAY_4_DAY_FRAME  (GRect(170,78,45,25))
 	
 //Once weather support gets introduced, the "Sunny" icon will change to reflect said weather.
 //ingame there are:
@@ -140,10 +154,15 @@ typedef struct dayTransDay{
 	BmpContainer 	imgWeatherSplitTop_BLACK;
 	BmpContainer 	imgWeatherSplitBottom_WHITE;
 	BmpContainer 	imgWeatherSplitBottom_BLACK;
-	PropertyAnimation slideLeftAnimation;
-	GRect wordRect;
-	GRect dayRect;
-	GRect imgRect;
+	PropertyAnimation slideLeftWordAnimation;
+	PropertyAnimation slideLeftDayAnimation;
+	PropertyAnimation slideLeftImgAnimation;
+	GRect wordRectStart;
+	GRect dayRectStart;
+	GRect imgRectStart;
+	GRect wordRectEnd;
+	GRect dayRectEnd;
+	GRect imgRectEnd;
 	bool isSplit;
 	int previousWeather;
 	int previousWeatherSplitTop;
@@ -162,8 +181,7 @@ typedef struct dayTrans{
 	GRect layerTextYearFrame;
 	GRect startRect;
 	GRect endRect;
-	//dayTransDay day[NUMBER_OF_DAYS]; //4
-	dayTransDay day;
+	dayTransDay day[NUMBER_OF_DAYS]; //4
 	PblTm tm;
 	PebbleTickEvent tick;
 	PropertyAnimation openingAnimation;
@@ -251,15 +269,17 @@ GFont fontDate;
 GFont fontAbbr;
 GFont fontMonth; //29
 GFont fontYear;	//29
+GFont fontTiny;
 ResHandle resMonth;	//29
 ResHandle resYear;	//29
 ResHandle resDate;
 ResHandle resAbbr;
+ResHandle resTiny;
 
 /*=========Bools============*/
-bool isDayTransition = true;
+bool isDayTransition = false;
 bool isWordTransition = false;
-bool isTransitioning = true;
+bool isTransitioning = false;
 bool httpFailed;
 bool Initializing = true;
 //Day Transitions
@@ -357,8 +377,7 @@ void SetWeatherImage()
 	else
 	{
 		//decypher the dates, but for now just set them all to sunny
-		bmp_init_container(RESOURCE_ID_IMAGE_SQUARE_SUN,&dayTransition.day.imgWeather);
-		/*for (int i = 0; i < 4; i++)
+		for (int i = 0; i < 4; i++)
 		{
 			if (!dayTransition.day[i].isSplit)
 			{
@@ -374,7 +393,7 @@ void SetWeatherImage()
 				bmp_init_container(RESOURCE_ID_IMAGE_SQUARE_SUN_INVERT,&dayTransition.day[i].imgWeatherSplitBottom_WHITE);
 				bmp_init_container(RESOURCE_ID_IMAGE_SQUARE_SUN,&dayTransition.day[i].imgWeatherSplitBottom_BLACK);			
 			}
-        }*/
+        }
 	}
 }
 
@@ -415,10 +434,9 @@ void RemoveAndDeIntBmp(char* bitmap)
 		}
 		else //is transitioning
 		{
-			layer_remove_from_parent(&dayTransition.day.layerWeather.layer);
-			bmp_deinit_container(&dayTransition.day.imgWeather);
-			/*for (int i = 0; i < 4; i++)
+			for (int i = 0; i < 4; i++)
 			{
+				//vibes_double_pulse();
 				if (i != 2) //gets special de-inted with the closing.
 				{
 					if (!dayTransition.day[i].isSplit)
@@ -438,7 +456,7 @@ void RemoveAndDeIntBmp(char* bitmap)
 						bmp_deinit_container(&dayTransition.day[i].imgWeatherSplitBottom_BLACK);
 					}
 				}
-			}*/
+			}
 		}
 	}
 
@@ -518,26 +536,18 @@ void SetBitmap(char* bitmap)
 			}
 		}
 		else
-		{
-			bitmap_layer_init(&dayTransition.day.layerWeather, dayTransition.day.imgRect);
-			bitmap_layer_set_bitmap(&dayTransition.day.layerWeather,&imgWeather.bmp);
-			bitmap_layer_set_background_color(&dayTransition.day.layerWeather,GColorClear);
-			bitmap_layer_set_compositing_mode(&dayTransition.day.layerWeather, GCompOpAssign);
-			layer_add_child(&window.layer, &dayTransition.day.layerWeather.layer);
-			layer_mark_dirty(&dayTransition.day.layerWeather.layer);	
-			
-			/*for (int i = 0; i < 4; i++)
+		{		
+			for (int i = 0; i < 4; i++)
 			{
 				if (!dayTransition.day[i].isSplit)
 				{
-					//vibes_short_pulse();
-					bitmap_layer_init(&dayTransition.day[i].layerWeather, dayTransition.day[i].imgRect);
-					bitmap_layer_set_bitmap(&dayTransition.day[i].layerWeather,&imgWeather.bmp);
+					
+					bitmap_layer_init(&dayTransition.day[i].layerWeather, dayTransition.day[i].imgRectStart);
+					bitmap_layer_set_bitmap(&dayTransition.day[i].layerWeather,&dayTransition.day[i].imgWeather.bmp);
 					bitmap_layer_set_background_color(&dayTransition.day[i].layerWeather,GColorClear);
 					bitmap_layer_set_compositing_mode(&dayTransition.day[i].layerWeather, GCompOpAssign);
 					layer_add_child(&window.layer, &dayTransition.day[i].layerWeather.layer);
 					layer_mark_dirty(&dayTransition.day[i].layerWeather.layer);		
-					
 					if (dayTransition.day[i].previousWeather != dayTransition.day[i].currentWeather)
 					{
 						dayTransition.day[i].previousWeather = dayTransition.day[i].currentWeather;
@@ -546,14 +556,14 @@ void SetBitmap(char* bitmap)
 				else
 				{
 				//TOP WHITE
-					bitmap_layer_init(&dayTransition.day[i].layerWeatherSplitTop_WHITE, dayTransition.day[i].imgRect);
+					bitmap_layer_init(&dayTransition.day[i].layerWeatherSplitTop_WHITE, dayTransition.day[i].imgRectStart);
 					bitmap_layer_set_bitmap(&dayTransition.day[i].layerWeatherSplitTop_WHITE,&dayTransition.day[i].imgWeatherSplitTop_WHITE.bmp);
 					bitmap_layer_set_background_color(&dayTransition.day[i].layerWeatherSplitTop_WHITE,GColorClear);
 					bitmap_layer_set_compositing_mode(&dayTransition.day[i].layerWeatherSplitTop_WHITE, GCompOpClear);
 					layer_add_child(&window.layer, &dayTransition.day[i].layerWeatherSplitTop_WHITE.layer);
 					layer_mark_dirty(&dayTransition.day[i].layerWeatherSplitTop_WHITE.layer);
 				//TOP BLACK
-					bitmap_layer_init(&dayTransition.day[i].layerWeatherSplitTop_BLACK, dayTransition.day[i].imgRect);
+					bitmap_layer_init(&dayTransition.day[i].layerWeatherSplitTop_BLACK, dayTransition.day[i].imgRectStart);
 					bitmap_layer_set_bitmap(&dayTransition.day[i].layerWeatherSplitTop_BLACK,&dayTransition.day[i].imgWeatherSplitTop_BLACK.bmp);
 					bitmap_layer_set_background_color(&dayTransition.day[i].layerWeatherSplitTop_BLACK,GColorClear);
 					bitmap_layer_set_compositing_mode(&dayTransition.day[i].layerWeatherSplitTop_BLACK, GCompOpOr);
@@ -565,14 +575,14 @@ void SetBitmap(char* bitmap)
 						dayTransition.day[i].previousWeatherSplitTop = dayTransition.day[i].currentWeatherSplitTop;
 					}
 				//BOTTOM WHITE
-					bitmap_layer_init(&dayTransition.day[i].layerWeatherSplitBottom_WHITE, dayTransition.day[i].imgRect);
+					bitmap_layer_init(&dayTransition.day[i].layerWeatherSplitBottom_WHITE, dayTransition.day[i].imgRectStart);
 					bitmap_layer_set_bitmap(&dayTransition.day[i].layerWeatherSplitBottom_WHITE,&dayTransition.day[i].imgWeatherSplitBottom_WHITE.bmp);
 					bitmap_layer_set_background_color(&dayTransition.day[i].layerWeatherSplitBottom_WHITE,GColorClear);
 					bitmap_layer_set_compositing_mode(&dayTransition.day[i].layerWeatherSplitBottom_WHITE, GCompOpClear);
 					layer_add_child(&window.layer, &dayTransition.day[i].layerWeatherSplitBottom_WHITE.layer);
 					layer_mark_dirty(&dayTransition.day[i].layerWeatherSplitBottom_WHITE.layer);
 				//BOTTOM BLACK
-					bitmap_layer_init(&dayTransition.day[i].layerWeatherSplitBottom_BLACK, dayTransition.day[i].imgRect);
+					bitmap_layer_init(&dayTransition.day[i].layerWeatherSplitBottom_BLACK, dayTransition.day[i].imgRectStart);
 					bitmap_layer_set_bitmap(&dayTransition.day[i].layerWeatherSplitBottom_BLACK,&dayTransition.day[i].imgWeatherSplitBottom_BLACK.bmp);
 					bitmap_layer_set_background_color(&dayTransition.day[i].layerWeatherSplitBottom_BLACK,GColorClear);
 					bitmap_layer_set_compositing_mode(&dayTransition.day[i].layerWeatherSplitBottom_BLACK, GCompOpOr);
@@ -584,7 +594,7 @@ void SetBitmap(char* bitmap)
 						dayTransition.day[i].previousWeatherSplitBottom = dayTransition.day[i].currentWeatherSplitBottom;
 					}
 				}
-			}*/
+			}
 		}
 	}
 	/*else if (strcmp(bitmap,DATE) == 0){}*/
@@ -675,7 +685,7 @@ void failed(int32_t cookie, int http_status, void* context) {
 		currentWeather = 11;
 		SetBitmap(WEATHER);
 		//weather_layer_set_icon(&weather_layer, WEATHER_ICON_NO_WEATHER);
-		//text_layer_set_text(&weather_layer.temp_layer, "---°");
+		//text_layer_set_text(&weather_layer.temp_layer, "---Â°");
 	}
 	link_monitor_handle_failure(http_status);
 	httpFailed = true;
@@ -920,29 +930,35 @@ void WordTransitionIntro()
 
 void ClosingAnimationStopped(Animation* animation, bool finished, void* context)
 {
+	
  	layer_remove_from_parent(&dayTransition.layerDayTrans.layer);
+	//vibes_short_pulse();
 	layer_remove_from_parent(&dayTransition.layerTextYear.layer);
+	//vibes_short_pulse();
 	layer_remove_from_parent(&dayTransition.layerTextMonth.layer);
+	//vibes_short_pulse();
+	layer_remove_from_parent(&dayTransition.invertLayer.layer);
+	//vibes_short_pulse();
+	
 	//special case de-inting
-	layer_remove_from_parent(&dayTransition.day.layerDay.layer);
-	layer_remove_from_parent(&dayTransition.day.layerWord.layer);
-	if (!dayTransition.day.isSplit)
+	layer_remove_from_parent(&dayTransition.day[2].layerDay.layer);
+	layer_remove_from_parent(&dayTransition.day[2].layerWord.layer);
+	if (!dayTransition.day[2].isSplit)
 	{
-		layer_remove_from_parent(&dayTransition.day.layerWeather.layer);
-		bmp_deinit_container(&dayTransition.day.imgWeather);
+		layer_remove_from_parent(&dayTransition.day[2].layerWeather.layer);
+		bmp_deinit_container(&dayTransition.day[2].imgWeather);
 	}
 	else
 	{
-		layer_remove_from_parent(&dayTransition.day.layerWeatherSplitTop_WHITE.layer);
-		bmp_deinit_container(&dayTransition.day.imgWeatherSplitTop_WHITE);
-		layer_remove_from_parent(&dayTransition.day.layerWeatherSplitBottom_WHITE.layer);
-		bmp_deinit_container(&dayTransition.day.imgWeatherSplitBottom_WHITE);
-		layer_remove_from_parent(&dayTransition.day.layerWeatherSplitTop_BLACK.layer);
-		bmp_deinit_container(&dayTransition.day.imgWeatherSplitTop_BLACK);
-		layer_remove_from_parent(&dayTransition.day.layerWeatherSplitBottom_BLACK.layer);
-		bmp_deinit_container(&dayTransition.day.imgWeatherSplitBottom_BLACK);
+		layer_remove_from_parent(&dayTransition.day[2].layerWeatherSplitTop_WHITE.layer);
+		bmp_deinit_container(&dayTransition.day[2].imgWeatherSplitTop_WHITE);
+		layer_remove_from_parent(&dayTransition.day[2].layerWeatherSplitBottom_WHITE.layer);
+		bmp_deinit_container(&dayTransition.day[2].imgWeatherSplitBottom_WHITE);
+		layer_remove_from_parent(&dayTransition.day[2].layerWeatherSplitTop_BLACK.layer);
+		bmp_deinit_container(&dayTransition.day[2].imgWeatherSplitTop_BLACK);
+		layer_remove_from_parent(&dayTransition.day[2].layerWeatherSplitBottom_BLACK.layer);
+		bmp_deinit_container(&dayTransition.day[2].imgWeatherSplitBottom_BLACK);
 	}
-	layer_remove_from_parent(&dayTransition.invertLayer.layer);
 	isTransitioning = false;
 	Initializing = false;
 	Watchface();
@@ -950,7 +966,7 @@ void ClosingAnimationStopped(Animation* animation, bool finished, void* context)
 
 void ClosingAnimationStarted(Animation* animation, bool finished, void* context)
 {
-	/*for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		if (i != 2)
 		{
@@ -958,97 +974,76 @@ void ClosingAnimationStarted(Animation* animation, bool finished, void* context)
 			layer_remove_from_parent(&dayTransition.day[i].layerWord.layer);
 		}
 	}
-	RemoveAndDeIntBmp(WEATHER);*/
+	RemoveAndDeIntBmp(WEATHER);
 }
 		
 							   
-void DayTransitionClosing(AppContextRef ctx)
+/*void DayTransitionClosing(AppContextRef ctx)
 {
 	//setup closing animation?
+	//i think it's because day transition already has an animation on its layer,
+	//vibes_short_pulse();
+	
+	//vibes_short_pulse();
+}*/
+						   
+void SlidingAnimationStopped(Animation* animation, bool finished, void* context) 
+{
+	//possibly not passing in the correct context ( not right type?)
 	property_animation_init_layer_frame(&dayTransition.closingAnimation, &dayTransition.layerDayTrans.layer, &dayTransition.endRect,&dayTransition.startRect);
 	animation_set_duration( &dayTransition.closingAnimation.animation, closingAnimationDuration);
 	animation_set_delay(&dayTransition.closingAnimation.animation, closingAnimationDelay);
 	animation_set_handlers(&dayTransition.closingAnimation.animation, (AnimationHandlers){
-		
-		.stopped = (AnimationStoppedHandler)ClosingAnimationStopped,
-		.started = (AnimationStartedHandler)ClosingAnimationStarted
-	}, (void *)ctx);
+	.started = (AnimationStartedHandler)ClosingAnimationStarted,
+	.stopped = (AnimationStoppedHandler)ClosingAnimationStopped
+	}, context);
 	
 	animation_schedule(&dayTransition.closingAnimation.animation);
 }
 						   
-void SlidingAnimationStopped(Animation* animation, bool finished, void* context) 
-{
-	DayTransitionClosing(context);	
-}
-						   
 void SetupSlidingFrames()
 {
-		//vibes_short_pulse();
-		dayTransition.day.wordRect = DAY_3_WORD_FRAME;
-		dayTransition.day.dayRect = DAY_3_DAY_FRAME;
-		dayTransition.day.imgRect = DAY_3_IMAGE_FRAME;
-		//for now it'll be the same day on all of them, but we'll have to implement maths and offsets later
-		static char wordText[] = " Xxx";
-		static char dayText[] = "00";
-
-		string_format_time(dayText, sizeof(dayText), "%d", dayTransition.tick.tick_time); //WORDS
-		string_format_time(wordText, sizeof(wordText), " %a", dayTransition.tick.tick_time); //NUMBERS
-		//uppercase it, should be by itself, but fuck it.
-		for (int index = 0; wordText[index] != 0; index++) {
-			if (wordText[index] >= 'a' && wordText[index] <= 'z') {
-				wordText[index] -= 0x20;
-			}
-		}				
-		
-		//layers init
-		text_layer_init(&dayTransition.day.layerWord, dayTransition.day.wordRect);
-		text_layer_set_text_color(&dayTransition.day.layerWord, GColorWhite);
-		text_layer_set_background_color(&dayTransition.day.layerWord, GColorClear);
-		text_layer_set_font(&dayTransition.day.layerWord, fontYear); //just to test
-		text_layer_set_text_alignment(&dayTransition.day.layerWord, GTextAlignmentCenter);
-		layer_add_child(&window.layer, &dayTransition.day.layerWord.layer);
-		text_layer_set_text(&dayTransition.day.layerWord,wordText);
-		
-		text_layer_init(&dayTransition.day.layerDay, dayTransition.day.dayRect);
-		text_layer_set_text_color(&dayTransition.day.layerDay, GColorWhite);
-		text_layer_set_background_color(&dayTransition.day.layerDay, GColorClear);
-		text_layer_set_font(&dayTransition.day.layerDay, fontDate); //just to test
-		text_layer_set_text_alignment(&dayTransition.day.layerDay, GTextAlignmentCenter);
-		layer_add_child(&window.layer, &dayTransition.day.layerDay.layer);			
-		text_layer_set_text(&dayTransition.day.layerDay,dayText);		
-		
-		dayTransition.day.isSplit = false;//DEBUG	
-	
-	/*for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		if (i == 0)
 		{
 			//vibes_short_pulse();
-			dayTransition.day[i].wordRect = DAY_1_WORD_FRAME;
-			dayTransition.day[i].dayRect = DAY_1_DAY_FRAME;
-			dayTransition.day[i].imgRect = DAY_1_IMAGE_FRAME;
+			dayTransition.day[i].wordRectStart = DAY_1_WORD_FRAME;
+			dayTransition.day[i].dayRectStart = DAY_1_DAY_FRAME;
+			dayTransition.day[i].imgRectStart = DAY_1_IMAGE_FRAME;
+			dayTransition.day[i].wordRectEnd = DAY_0_WORD_FRAME;
+			dayTransition.day[i].dayRectEnd = DAY_0_DAY_FRAME;
+			dayTransition.day[i].imgRectEnd = DAY_0_IMAGE_FRAME;
 		}	
 		else if (i == 1)
 		{
 			//vibes_short_pulse();
-			dayTransition.day[i].wordRect = DAY_2_WORD_FRAME;
-			dayTransition.day[i].dayRect = DAY_2_DAY_FRAME;
-			dayTransition.day[i].imgRect = DAY_2_IMAGE_FRAME;
+			dayTransition.day[i].wordRectStart = DAY_2_WORD_FRAME;
+			dayTransition.day[i].dayRectStart = DAY_2_DAY_FRAME;
+			dayTransition.day[i].imgRectStart = DAY_2_IMAGE_FRAME;
+			dayTransition.day[i].wordRectEnd = DAY_1_WORD_FRAME;
+			dayTransition.day[i].dayRectEnd = DAY_1_DAY_FRAME;
+			dayTransition.day[i].imgRectEnd = DAY_1_IMAGE_FRAME;
 		}
 		else if (i == 2)
 		{
 			//vibes_short_pulse();
-			dayTransition.day[i].wordRect = DAY_3_WORD_FRAME;
-			dayTransition.day[i].dayRect = DAY_3_DAY_FRAME;
-			dayTransition.day[i].imgRect = DAY_3_IMAGE_FRAME;
+			dayTransition.day[i].wordRectStart = DAY_3_WORD_FRAME;
+			dayTransition.day[i].dayRectStart = DAY_3_DAY_FRAME;
+			dayTransition.day[i].imgRectStart = DAY_3_IMAGE_FRAME;
+			dayTransition.day[i].wordRectEnd = DAY_2_WORD_FRAME;
+			dayTransition.day[i].dayRectEnd = DAY_2_DAY_FRAME;
+			dayTransition.day[i].imgRectEnd = DAY_2_IMAGE_FRAME;
 		}
 		else if (i == 3)
 		{
 			//vibes_short_pulse();
-			dayTransition.day[i].wordRect = DAY_4_WORD_FRAME;
-			dayTransition.day[i].dayRect = DAY_4_DAY_FRAME;
-			dayTransition.day[i].imgRect = DAY_4_IMAGE_FRAME;
+			dayTransition.day[i].wordRectStart = DAY_4_WORD_FRAME;
+			dayTransition.day[i].dayRectStart = DAY_4_DAY_FRAME;
+			dayTransition.day[i].imgRectStart = DAY_4_IMAGE_FRAME;
+			dayTransition.day[i].wordRectEnd = DAY_3_WORD_FRAME;
+			dayTransition.day[i].dayRectEnd = DAY_3_DAY_FRAME;
+			dayTransition.day[i].imgRectEnd = DAY_3_IMAGE_FRAME;
 		}
 		
 		//for now it'll be the same day on all of them, but we'll have to implement maths and offsets later
@@ -1064,8 +1059,9 @@ void SetupSlidingFrames()
 			}
 		}				
 		
+		//this stuff isn't being created, don't know why. but look into it.
 		//layers init
-		text_layer_init(&dayTransition.day[i].layerWord, dayTransition.day[i].wordRect);
+		text_layer_init(&dayTransition.day[i].layerWord, dayTransition.day[i].wordRectStart);
 		text_layer_set_text_color(&dayTransition.day[i].layerWord, GColorWhite);
 		text_layer_set_background_color(&dayTransition.day[i].layerWord, GColorClear);
 		text_layer_set_font(&dayTransition.day[i].layerWord, fontYear); //just to test
@@ -1073,19 +1069,24 @@ void SetupSlidingFrames()
 		layer_add_child(&window.layer, &dayTransition.day[i].layerWord.layer);
 		text_layer_set_text(&dayTransition.day[i].layerWord,wordText);
 		
-		text_layer_init(&dayTransition.day[i].layerDay, dayTransition.day[i].dayRect);
+		text_layer_init(&dayTransition.day[i].layerDay, dayTransition.day[i].dayRectStart);
 		text_layer_set_text_color(&dayTransition.day[i].layerDay, GColorWhite);
 		text_layer_set_background_color(&dayTransition.day[i].layerDay, GColorClear);
-		text_layer_set_font(&dayTransition.day[i].layerDay, fontDate); //just to test
+		text_layer_set_font(&dayTransition.day[i].layerDay, fontTiny); //just to test
 		text_layer_set_text_alignment(&dayTransition.day[i].layerDay, GTextAlignmentCenter);
 		layer_add_child(&window.layer, &dayTransition.day[i].layerDay.layer);			
 		text_layer_set_text(&dayTransition.day[i].layerDay,dayText);		
 		
 		dayTransition.day[i].isSplit = false;//DEBUG	
-	}*/
-}							   
+	}
+}
 
-void OpeningAnimationStopped(Animation* animation, bool finished, void* context) {
+/*void DayTransitionMiddleSetup(AppContextRef ctx){
+	
+}*/
+
+void OpeningAnimationStopped(Animation* animation, bool finished, void* context) 
+{
 	dayTransition.layerTextMonthFrame = LAYER_TEXT_MONTH_FRAME;	
 	//we need to remove this layer, and redraw it, but black BG. so the inverter layer will work right.
 	layer_remove_from_parent(&dayTransition.layerDayTrans.layer);
@@ -1124,87 +1125,94 @@ void OpeningAnimationStopped(Animation* animation, bool finished, void* context)
 	text_layer_set_text(&dayTransition.layerTextYear, yearText);
 	SetupSlidingFrames();
 	SetBitmap(WEATHER);
-	
 	inverter_layer_init(&dayTransition.invertLayer, dayTransition.endRect);
 	layer_add_child(&window.layer,&dayTransition.invertLayer.layer);
+
+	property_animation_init_layer_frame(&dayTransition.day[0].slideLeftWordAnimation, &dayTransition.day[0].layerWord.layer,&dayTransition.day[0].wordRectStart,&dayTransition.day[0].wordRectEnd);
+	property_animation_init_layer_frame(&dayTransition.day[0].slideLeftDayAnimation, &dayTransition.day[0].layerDay.layer,&dayTransition.day[0].dayRectStart, &dayTransition.day[0].dayRectEnd);
+	property_animation_init_layer_frame(&dayTransition.day[0].slideLeftImgAnimation, &dayTransition.day[0].layerWeather.layer,&dayTransition.day[0].imgRectStart,&dayTransition.day[0].imgRectEnd);
+	animation_set_duration(&dayTransition.day[0].slideLeftWordAnimation.animation, slideAnimationDuration);
+	animation_set_delay(&dayTransition.day[0].slideLeftWordAnimation.animation, slideAnimationDelay);
+	animation_schedule(&dayTransition.day[0].slideLeftWordAnimation.animation);
+	animation_set_duration(&dayTransition.day[0].slideLeftDayAnimation.animation, slideAnimationDuration);
+	animation_set_delay(&dayTransition.day[0].slideLeftDayAnimation.animation, slideAnimationDelay);
+	animation_schedule(&dayTransition.day[0].slideLeftDayAnimation.animation);
+	animation_set_duration(&dayTransition.day[0].slideLeftImgAnimation.animation, slideAnimationDuration);
+	animation_set_delay(&dayTransition.day[0].slideLeftImgAnimation.animation, slideAnimationDelay);
+	animation_schedule(&dayTransition.day[0].slideLeftImgAnimation.animation);
 	
-	//DayTransitionClosing(context);	
-	/*
-	for (int i = 0; i < 4; i++)
+	property_animation_init_layer_frame(&dayTransition.day[1].slideLeftWordAnimation, &dayTransition.day[1].layerWord.layer,&dayTransition.day[1].wordRectStart,&dayTransition.day[1].wordRectEnd);
+	property_animation_init_layer_frame(&dayTransition.day[1].slideLeftDayAnimation, &dayTransition.day[1].layerDay.layer,&dayTransition.day[1].dayRectStart, &dayTransition.day[1].dayRectEnd);
+	property_animation_init_layer_frame(&dayTransition.day[1].slideLeftImgAnimation, &dayTransition.day[1].layerWeather.layer,&dayTransition.day[1].imgRectStart,&dayTransition.day[1].imgRectEnd);
+	animation_set_duration(&dayTransition.day[1].slideLeftWordAnimation.animation, slideAnimationDuration);
+	animation_set_delay(&dayTransition.day[1].slideLeftWordAnimation.animation, slideAnimationDelay);
+	animation_schedule(&dayTransition.day[1].slideLeftWordAnimation.animation);
+	animation_set_duration(&dayTransition.day[1].slideLeftDayAnimation.animation, slideAnimationDuration);
+	animation_set_delay(&dayTransition.day[1].slideLeftDayAnimation.animation, slideAnimationDelay);
+	animation_schedule(&dayTransition.day[1].slideLeftDayAnimation.animation);
+	animation_set_duration(&dayTransition.day[1].slideLeftImgAnimation.animation, slideAnimationDuration);
+	animation_set_delay(&dayTransition.day[1].slideLeftImgAnimation.animation, slideAnimationDelay);
+	animation_schedule(&dayTransition.day[1].slideLeftImgAnimation.animation);
+	
+	property_animation_init_layer_frame(&dayTransition.day[2].slideLeftWordAnimation, &dayTransition.day[2].layerWord.layer,&dayTransition.day[2].wordRectStart,&dayTransition.day[2].wordRectEnd);
+	property_animation_init_layer_frame(&dayTransition.day[2].slideLeftDayAnimation, &dayTransition.day[2].layerDay.layer,&dayTransition.day[2].dayRectStart, &dayTransition.day[2].dayRectEnd);
+	property_animation_init_layer_frame(&dayTransition.day[2].slideLeftImgAnimation, &dayTransition.day[2].layerWeather.layer,&dayTransition.day[2].imgRectStart,&dayTransition.day[2].imgRectEnd);
+	animation_set_duration(&dayTransition.day[2].slideLeftWordAnimation.animation, slideAnimationDuration);
+	animation_set_delay(&dayTransition.day[2].slideLeftWordAnimation.animation, slideAnimationDelay);
+	animation_schedule(&dayTransition.day[2].slideLeftWordAnimation.animation);
+	animation_set_duration(&dayTransition.day[2].slideLeftDayAnimation.animation, slideAnimationDuration);
+	animation_set_delay(&dayTransition.day[2].slideLeftDayAnimation.animation, slideAnimationDelay);
+	animation_schedule(&dayTransition.day[2].slideLeftDayAnimation.animation);
+	animation_set_duration(&dayTransition.day[2].slideLeftImgAnimation.animation, slideAnimationDuration);
+	animation_set_delay(&dayTransition.day[2].slideLeftImgAnimation.animation, slideAnimationDelay);
+	animation_schedule(&dayTransition.day[2].slideLeftImgAnimation.animation);
+
+	property_animation_init_layer_frame(&dayTransition.day[3].slideLeftWordAnimation, &dayTransition.day[3].layerWord.layer,&dayTransition.day[3].wordRectStart,&dayTransition.day[3].wordRectEnd);
+	property_animation_init_layer_frame(&dayTransition.day[3].slideLeftDayAnimation, &dayTransition.day[3].layerDay.layer,&dayTransition.day[3].dayRectStart, &dayTransition.day[3].dayRectEnd);
+	property_animation_init_layer_frame(&dayTransition.day[3].slideLeftImgAnimation, &dayTransition.day[3].layerWeather.layer,&dayTransition.day[3].imgRectStart,&dayTransition.day[3].imgRectEnd);
+	animation_set_duration(&dayTransition.day[3].slideLeftWordAnimation.animation, slideAnimationDuration);
+	animation_set_delay(&dayTransition.day[3].slideLeftWordAnimation.animation, slideAnimationDelay);
+	animation_schedule(&dayTransition.day[3].slideLeftWordAnimation.animation);
+	animation_set_duration(&dayTransition.day[3].slideLeftDayAnimation.animation, slideAnimationDuration);
+	animation_set_delay(&dayTransition.day[3].slideLeftDayAnimation.animation, slideAnimationDelay);
+	animation_schedule(&dayTransition.day[3].slideLeftDayAnimation.animation);
+	animation_set_duration(&dayTransition.day[3].slideLeftImgAnimation.animation, slideAnimationDuration);
+	animation_set_delay(&dayTransition.day[3].slideLeftImgAnimation.animation, slideAnimationDelay);
+	animation_schedule(&dayTransition.day[3].slideLeftImgAnimation.animation);
+	
+	/*animation_set_handlers(&dayTransition.day[3].slideLeftImgAnimation.animation, (AnimationHandlers){
+		.stopped = (AnimationStoppedHandler)SlidingAnimationStopped
+	}, (void*) context);*/
+	
+	/*for (int i = 0; i < 4; i++)
 	{
 		//perhaps i should just have all the texts on 1 layer, and just write to those frames? dunno if possible, need to check
 		//incase not, doing it the complax way.
-		if (i == 0)
+		property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWord.layer,&dayTransition.day[i].wordRectStart,&dayTransition.day[i].wordRectEnd);
+		property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerDay.layer,&dayTransition.day[i].dayRectStart, &dayTransition.day[i].dayRectEnd);
+		if (!&dayTransition.day[i].isSplit)
 		{
-			property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWord.layer,&dayTransition.day[i].wordRect,&DAY_0_WORD_FRAME);
-			property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerDay.layer,&dayTransition.day[i].dayRect,&DAY_0_DAY_FRAME);
-			if (!&dayTransition.day[i].isSplit)
-			{
-				property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWeather.layer,&dayTransition.day[i].imgRect,&DAY_0_IMAGE_FRAME);
-			}
-			else
-			{
-				property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWeatherSplitTop_WHITE.layer,&dayTransition.day[i].imgRect,&DAY_0_IMAGE_FRAME);
-				property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWeatherSplitTop_BLACK.layer,&dayTransition.day[i].imgRect,&DAY_0_IMAGE_FRAME);
-				property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWeatherSplitBottom_WHITE.layer,&dayTransition.day[i].imgRect,&DAY_0_IMAGE_FRAME);
-				property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWeatherSplitBottom_BLACK.layer,&dayTransition.day[i].imgRect,&DAY_0_IMAGE_FRAME);
-			}
+			property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWeather.layer,&dayTransition.day[i].imgRectStart,&dayTransition.day[i].imgRectEnd);
 		}
-		else if (i == 1)
+		else
 		{
-			property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWord.layer,&dayTransition.day[i].wordRect,&DAY_1_WORD_FRAME);
-			property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerDay.layer,&dayTransition.day[i].dayRect,&DAY_1_DAY_FRAME);
-			if (!&dayTransition.day[i].isSplit)
-			{
-				property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWeather.layer,&dayTransition.day[i].imgRect,&DAY_1_IMAGE_FRAME);
-			}
-			else
-			{
-				property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWeatherSplitTop_WHITE.layer,&dayTransition.day[i].imgRect,&DAY_1_IMAGE_FRAME);
-				property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWeatherSplitTop_BLACK.layer,&dayTransition.day[i].imgRect,&DAY_1_IMAGE_FRAME);
-				property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWeatherSplitBottom_WHITE.layer,&dayTransition.day[i].imgRect,&DAY_1_IMAGE_FRAME);
-				property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWeatherSplitBottom_BLACK.layer,&dayTransition.day[i].imgRect,&DAY_1_IMAGE_FRAME);
-			}
+			property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWeatherSplitTop_WHITE.layer,&dayTransition.day[i].imgRectStart,&dayTransition.day[i].imgRectEnd);
+			property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWeatherSplitTop_BLACK.layer,&dayTransition.day[i].imgRectStart,&dayTransition.day[i].imgRectEnd);
+			property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWeatherSplitBottom_WHITE.layer,&dayTransition.day[i].imgRectStart,&dayTransition.day[i].imgRectEnd);
+			property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWeatherSplitBottom_BLACK.layer,&dayTransition.day[i].imgRectStart,&dayTransition.day[i].imgRectEnd);
 		}
-		else if (i == 2)
+		if (i == 3)
 		{
-			property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWord.layer,&dayTransition.day[i].wordRect,&DAY_2_WORD_FRAME);
-			property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerDay.layer,&dayTransition.day[i].dayRect,&DAY_2_DAY_FRAME);
-			if (!&dayTransition.day[i].isSplit)
-			{
-				property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWeather.layer,&dayTransition.day[i].imgRect,&DAY_2_IMAGE_FRAME);
-			}
-			else
-			{
-				property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWeatherSplitTop_WHITE.layer,&dayTransition.day[i].imgRect,&DAY_2_IMAGE_FRAME);
-				property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWeatherSplitTop_BLACK.layer,&dayTransition.day[i].imgRect,&DAY_2_IMAGE_FRAME);
-				property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWeatherSplitBottom_WHITE.layer,&dayTransition.day[i].imgRect,&DAY_2_IMAGE_FRAME);
-				property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWeatherSplitBottom_BLACK.layer,&dayTransition.day[i].imgRect,&DAY_2_IMAGE_FRAME);
-			}
-		}
-		else if (i == 3)
-		{
-			property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWord.layer,&dayTransition.day[i].wordRect,&DAY_3_WORD_FRAME);
-			property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerDay.layer,&dayTransition.day[i].dayRect,&DAY_3_DAY_FRAME);
-			if (!&dayTransition.day[i].isSplit)
-			{
-				property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWeather.layer,&dayTransition.day[i].imgRect,&DAY_3_IMAGE_FRAME);
-			}
-			else
-			{
-				property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWeatherSplitTop_WHITE.layer,&dayTransition.day[i].imgRect,&DAY_3_IMAGE_FRAME);
-				property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWeatherSplitTop_BLACK.layer,&dayTransition.day[i].imgRect,&DAY_3_IMAGE_FRAME);
-				property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWeatherSplitBottom_WHITE.layer,&dayTransition.day[i].imgRect,&DAY_3_IMAGE_FRAME);
-				property_animation_init_layer_frame(&dayTransition.day[i].slideLeftAnimation, &dayTransition.day[i].layerWeatherSplitBottom_BLACK.layer,&dayTransition.day[i].imgRect,&DAY_3_IMAGE_FRAME);
-			}
 			//only set handlers on the last frame.
 			animation_set_handlers(&dayTransition.day[i].slideLeftAnimation.animation, (AnimationHandlers){
 			.stopped = (AnimationStoppedHandler)SlidingAnimationStopped
 			}, context);
 		}
+		
 		animation_set_duration(&dayTransition.day[i].slideLeftAnimation.animation, slideAnimationDuration);
 		animation_set_delay(&dayTransition.day[i].slideLeftAnimation.animation, slideAnimationDelay);
-		animation_schedule(&dayTransition.openingAnimation.animation);
+		animation_schedule(&dayTransition.day[i].slideLeftAnimation.animation);
+		//animation_init(&dayTransition.day[i].slideLeftAnimation.animation);
 	}*/
 }
 
@@ -1277,6 +1285,8 @@ void handle_init(AppContextRef ctx) {
 	fontYear = fonts_load_custom_font(resYear);
 	resMonth = resource_get_handle(RESOURCE_ID_FONT_DAYS_42);
 	fontMonth = fonts_load_custom_font(resMonth);
+	resTiny = resource_get_handle(RESOURCE_ID_FONT_DAYS_16);
+	fontTiny = fonts_load_custom_font(resTiny);
 	
     //SETUP INIT STUFF
 	//previousMinute = 99;
@@ -1291,11 +1301,13 @@ void handle_init(AppContextRef ctx) {
 	currentWeather = 11; //uNKNOWN
 
 	DayTransition(ctx);
-	http_register_callbacks((HTTPCallbacks){.failure=failed,.success=success,.reconnect=reconnect,.location=location}, (void*)ctx);
-	//psleep(3000);//incase too fast
-	/*
-	//shouldn't act until return from day transition right?'
 	//Watchface();
+	http_register_callbacks((HTTPCallbacks){.failure=failed,.success=success,.reconnect=reconnect,.location=location}, (void*)ctx);
+	/*
+	//psleep(3000);//incase too fast
+	
+	//shouldn't act until return from day transition right?'
+
 		
 	PblTm tm;
     PebbleTickEvent t;
@@ -1327,6 +1339,7 @@ void handle_deinit(AppContextRef ctx)
 		fonts_unload_custom_font(fontAbbr);
 		fonts_unload_custom_font(fontYear);
 		fonts_unload_custom_font(fontMonth);
+		fonts_unload_custom_font(fontTiny);
 }
 
 void pbl_main(void *params)

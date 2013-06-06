@@ -245,6 +245,13 @@
             "file": "fonts/Days.ttf"
         },
         {
+            "trackingAdjust": -1,
+            "characterRegex": "[A-Z, 0-9.]",
+            "defName": "FONT_DAYS_16",
+            "type": "font",
+            "file": "fonts/Days.ttf"
+        },
+        {
             "defName": "IMAGE_BACKGROUND",
             "type": "png",
             "file": "images/persona4.png"
