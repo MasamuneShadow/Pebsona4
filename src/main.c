@@ -61,39 +61,46 @@ PBL_APP_INFO(MY_UUID,
 #define closingAnimationDuration 500
 #define slideAnimationDuration 500
 #define openAnimationDelay 250
-#define closingAnimationDelay 3000
+#define closingAnimationDelay 500
 #define slideAnimationDelay 250
 #define instantDuration 1
-#define LAYER_TEXT_MONTH_FRAME (GRect(45,0,50,45))
-#define LAYER_TEXT_YEAR_FRAME (GRect(45,50,50,28))
-#define START_RECT (GRect(67,0,0,168))
+#define LAYER_TEXT_MONTH_FRAME (GRect(46,0,52,42))
+#define LAYER_TEXT_YEAR_FRAME (GRect(46,50,52,26))
+#define START_RECT (GRect(72,0,0,168))
 #define END_RECT (GRect(46,0,52,168))
+
 //all of the images will be of the same size as the square, but thanks to the inverts, it'll work out w/ trans.
-#define DAY_0_IMAGE_FRAME (GRect(-50,119,0,38))
-#define DAY_1_IMAGE_FRAME (GRect(1,119,40,38))
-#define DAY_2_IMAGE_FRAME (GRect(53,119,40,38))//highlighed frame
-#define	DAY_3_IMAGE_FRAME (GRect(105,119,40,38))
-#define DAY_4_IMAGE_FRAME (GRect(170,119,40,38))
-/*#define DAY_0_WORD_FRAME (GRect(0,85,0,25))
-#define DAY_1_WORD_FRAME (GRect(5,85,35,25))
-#define DAY_2_WORD_FRAME (GRect(57,85,35,25))
-#define DAY_3_WORD_FRAME (GRect(110,85,35,25))
-#define DAY_4_WORD_FRAME (GRect(170,85,35,25))	
-#define DAY_0_DAY_FRAME   (GRect(0,65,0,35))
-#define DAY_1_DAY_FRAME   (GRect(5,65,35,35))
-#define DAY_2_DAY_FRAME   (GRect(57,65,35,35))
-#define DAY_3_DAY_FRAME   (GRect(110,65,35,35))
-#define DAY_4_DAY_FRAME   (GRect(170,65,35,35))*/
-#define DAY_0_WORD_FRAME (GRect(-50,95,0,18))
-#define DAY_1_WORD_FRAME (GRect(3,95,45,18))
-#define DAY_2_WORD_FRAME (GRect(50,95,45,18))
-#define DAY_3_WORD_FRAME (GRect(100,95,45,18))
-#define DAY_4_WORD_FRAME (GRect(170,95,45,18))	
-#define DAY_0_DAY_FRAME  (GRect(-50,78,0,25))
-#define DAY_1_DAY_FRAME  (GRect(3,78,45,25))
-#define DAY_2_DAY_FRAME  (GRect(50,78,45,25))
-#define DAY_3_DAY_FRAME  (GRect(100,78,45,25))
-#define DAY_4_DAY_FRAME  (GRect(170,78,45,25))
+#define day0PosX -50
+#define day1PosX 0
+#define day2PosX 52
+#define day3PosX 100
+#define day4PosX 147
+
+#define dayImgPosY 119
+#define dayImgRecX 40
+#define dayImgRecY 38
+#define dayWordPosY 95
+#define dayWordRecX 40
+#define dayWordRecY 18
+#define dayDayPosY 78
+#define dayDayRecX 40
+#define dayDayRecY 25
+
+#define DAY_0_IMAGE_FRAME (GRect(day0PosX,dayImgPosY,0,dayImgRecY))
+#define DAY_1_IMAGE_FRAME (GRect(day1PosX,dayImgPosY,dayImgRecX,dayImgRecY))
+#define DAY_2_IMAGE_FRAME (GRect(day2PosX,dayImgPosY,dayImgRecX,dayImgRecY))//highlighed frame
+#define	DAY_3_IMAGE_FRAME (GRect(day3PosX,dayImgPosY,dayImgRecX,dayImgRecY))
+#define DAY_4_IMAGE_FRAME (GRect(day4PosX,dayImgPosY,dayImgRecX,dayImgRecY))
+#define DAY_0_WORD_FRAME (GRect(day0PosX,dayWordPosY,0,dayWordRecY))
+#define DAY_1_WORD_FRAME (GRect(day1PosX,dayWordPosY,dayWordRecX,dayWordRecY))
+#define DAY_2_WORD_FRAME (GRect(day2PosX,dayWordPosY,dayWordRecX,dayWordRecY))
+#define DAY_3_WORD_FRAME (GRect(day3PosX,dayWordPosY,dayWordRecX,dayWordRecY))
+#define DAY_4_WORD_FRAME (GRect(day4PosX,dayWordPosY,dayWordRecX,dayWordRecY))	
+#define DAY_0_DAY_FRAME  (GRect(day0PosX,dayDayPosY,0,dayDayRecY))
+#define DAY_1_DAY_FRAME  (GRect(day1PosX,dayDayPosY,dayDayRecX,dayDayRecY))
+#define DAY_2_DAY_FRAME  (GRect(day2PosX,dayDayPosY,dayDayRecX,dayDayRecY))
+#define DAY_3_DAY_FRAME  (GRect(day3PosX,dayDayPosY,dayDayRecX,dayDayRecY))
+#define DAY_4_DAY_FRAME  (GRect(day4PosX,dayDayPosY,dayDayRecX,dayDayRecY))
 	
 //Once weather support gets introduced, the "Sunny" icon will change to reflect said weather.
 //ingame there are:
@@ -188,6 +195,7 @@ typedef struct dayTrans{
 	PropertyAnimation closingAnimation;	
 }dayTrans;
 dayTrans dayTransition;
+//dayTrans globalDayTransition;
 //Word Transitions
 /*Layer transition_word_layer;
 Layer transition_block_1_layer;
@@ -208,6 +216,20 @@ Layer transition_square_layer;*/
 	RESOURCE_ID_ICON_ERROR,
 };
 */
+static const int lastDayOfMonth[] = {
+	31,
+	28,
+	31,
+	30,
+	31,
+	30,
+	31,
+	31,
+	30,
+	31,
+	30,
+	31
+};
 static const int DIGIT_IMAGE_RESOURCE_IDS[] = {
   RESOURCE_ID_IMAGE_DIGIT_0,
   RESOURCE_ID_IMAGE_DIGIT_1,
@@ -376,7 +398,7 @@ void SetWeatherImage()
 	}
 	else
 	{
-		//decypher the dates, but for now just set them all to sunny
+	//decypher the dates, but for now just set them all to sunny
 		for (int i = 0; i < 4; i++)
 		{
 			if (!dayTransition.day[i].isSplit)
@@ -417,6 +439,7 @@ void SetTimeImage()
 
 void RemoveAndDeIntBmp(char* bitmap)
 {
+	
 	if (strcmp(bitmap,WORD) == 0 || strcmp(bitmap,ALL) == 0)
 	{
 		layer_remove_from_parent(&layerWord_WHITE.layer);
@@ -432,7 +455,7 @@ void RemoveAndDeIntBmp(char* bitmap)
 			layer_remove_from_parent(&layerWeather.layer);
 			bmp_deinit_container(&imgWeather);
 		}
-		else //is transitioning
+		else
 		{
 			for (int i = 0; i < 4; i++)
 			{
@@ -881,6 +904,8 @@ void Watchface()//DISPLAYS THE "WATCH PART" OR, NO TRANSITIONS ARE RUNNING
 {
 	if (!isTransitioning)
 	{
+		layer_remove_from_parent(&dayTransition.layerDayTrans.layer);
+		
 		window_set_background_color(&window, GColorClear);
 		
 		layer_remove_from_parent(&background_image.layer.layer);
@@ -931,19 +956,17 @@ void WordTransitionIntro()
 void ClosingAnimationStopped(Animation* animation, bool finished, void* context)
 {
 	
- 	layer_remove_from_parent(&dayTransition.layerDayTrans.layer);
-	//vibes_short_pulse();
 	layer_remove_from_parent(&dayTransition.layerTextYear.layer);
-	//vibes_short_pulse();
 	layer_remove_from_parent(&dayTransition.layerTextMonth.layer);
-	//vibes_short_pulse();
 	layer_remove_from_parent(&dayTransition.invertLayer.layer);
-	//vibes_short_pulse();
+	layer_remove_from_parent(&dayTransition.layerDayTrans.layer);
 	
 	//special case de-inting
 	layer_remove_from_parent(&dayTransition.day[2].layerDay.layer);
 	layer_remove_from_parent(&dayTransition.day[2].layerWord.layer);
-	if (!dayTransition.day[2].isSplit)
+	layer_remove_from_parent(&dayTransition.day[2].layerWeather.layer);
+	bmp_deinit_container(&dayTransition.day[2].imgWeather);
+	/*if (!dayTransition.day[2].isSplit)
 	{
 		layer_remove_from_parent(&dayTransition.day[2].layerWeather.layer);
 		bmp_deinit_container(&dayTransition.day[2].imgWeather);
@@ -958,14 +981,15 @@ void ClosingAnimationStopped(Animation* animation, bool finished, void* context)
 		bmp_deinit_container(&dayTransition.day[2].imgWeatherSplitTop_BLACK);
 		layer_remove_from_parent(&dayTransition.day[2].layerWeatherSplitBottom_BLACK.layer);
 		bmp_deinit_container(&dayTransition.day[2].imgWeatherSplitBottom_BLACK);
-	}
-	isTransitioning = false;
-	Initializing = false;
-	Watchface();
+	}*/
+	//isTransitioning = false;
+	//Initializing = false;
+	//Watchface();
 }
 
 void ClosingAnimationStarted(Animation* animation, bool finished, void* context)
 {
+	//dayTransition = (dayTrans) context;
 	for (int i = 0; i < 4; i++)
 	{
 		if (i != 2)
@@ -976,38 +1000,32 @@ void ClosingAnimationStarted(Animation* animation, bool finished, void* context)
 	}
 	RemoveAndDeIntBmp(WEATHER);
 }
-		
-							   
-/*void DayTransitionClosing(AppContextRef ctx)
-{
-	//setup closing animation?
-	//i think it's because day transition already has an animation on its layer,
-	//vibes_short_pulse();
-	
-	//vibes_short_pulse();
-}*/
-						   
+
 void SlidingAnimationStopped(Animation* animation, bool finished, void* context) 
 {
-	//possibly not passing in the correct context ( not right type?)
-	property_animation_init_layer_frame(&dayTransition.closingAnimation, &dayTransition.layerDayTrans.layer, &dayTransition.endRect,&dayTransition.startRect);
+	
+	//property_animation_init_layer_frame(&dayTransition.closingAnimation, &dayTransition.layerDayTrans.layer,&dayTransition.endRect,&dayTransition.startRect);
+	property_animation_init_layer_frame(&dayTransition.closingAnimation, &dayTransition.invertLayer.layer,&dayTransition.endRect,&dayTransition.startRect);
 	animation_set_duration( &dayTransition.closingAnimation.animation, closingAnimationDuration);
 	animation_set_delay(&dayTransition.closingAnimation.animation, closingAnimationDelay);
 	animation_set_handlers(&dayTransition.closingAnimation.animation, (AnimationHandlers){
 	.started = (AnimationStartedHandler)ClosingAnimationStarted,
 	.stopped = (AnimationStoppedHandler)ClosingAnimationStopped
 	}, context);
-	
+	//animation_unschedule_all();
 	animation_schedule(&dayTransition.closingAnimation.animation);
+	
 }
 						   
 void SetupSlidingFrames()
 {
+	/*int offset = 0;
+	int prevDay = (60 * 60 * 24);
+	int month = dayTransition.tick_time.tm_month;*/
 	for (int i = 0; i < 4; i++)
 	{
 		if (i == 0)
 		{
-			//vibes_short_pulse();
 			dayTransition.day[i].wordRectStart = DAY_1_WORD_FRAME;
 			dayTransition.day[i].dayRectStart = DAY_1_DAY_FRAME;
 			dayTransition.day[i].imgRectStart = DAY_1_IMAGE_FRAME;
@@ -1017,7 +1035,6 @@ void SetupSlidingFrames()
 		}	
 		else if (i == 1)
 		{
-			//vibes_short_pulse();
 			dayTransition.day[i].wordRectStart = DAY_2_WORD_FRAME;
 			dayTransition.day[i].dayRectStart = DAY_2_DAY_FRAME;
 			dayTransition.day[i].imgRectStart = DAY_2_IMAGE_FRAME;
@@ -1049,8 +1066,42 @@ void SetupSlidingFrames()
 		//for now it'll be the same day on all of them, but we'll have to implement maths and offsets later
 		static char wordText[] = " Xxx";
 		static char dayText[] = "00";
-
-		string_format_time(dayText, sizeof(dayText), "%d", dayTransition.tick.tick_time); //WORDS
+		/*static char monthText[] = "00";
+		
+		
+		string_format_time(monthText, sizeof(monthText), "%m", dayTransition.tick.tick_time); //Month
+		//yesterday
+		if (dayText == '01')		
+		{
+			if (monthText != '01')//meaning jan.
+				month-=1;
+			else
+				month = 12; //december
+			
+			day = lastDayOfMonth[month]
+			
+			//leap year check and offset.
+			if (month == 2)
+			{	
+				int year = dayTransition.tick.tick_time.tm_year;
+				if (year%400 == 0 || year%4 == 0)
+					day+=1; 
+			}
+		}
+		if (dayTransition.tick.tick_time.tm_yday != 0)
+		{
+			dayTransition.tick.tick_time.tm_yday-1;
+		}
+		else
+		{
+			day = 31;
+			month = 12;
+			year = dayTransition.tick.tick_time.tm_year+1899;//-1 year from current.
+		}
+		
+		char day[0] = (char)(((int)'0')+day/10);
+		day[1] = (char)(((int)'0')+day%10);*/
+		string_format_time(dayText, sizeof(dayText), "%d", dayTransition.tick.tick_time /*- offset*/); //WORDS
 		string_format_time(wordText, sizeof(wordText), " %a", dayTransition.tick.tick_time); //NUMBERS
 		//uppercase it, should be by itself, but fuck it.
 		for (int index = 0; wordText[index] != 0; index++) {
@@ -1076,17 +1127,13 @@ void SetupSlidingFrames()
 		text_layer_set_text_alignment(&dayTransition.day[i].layerDay, GTextAlignmentCenter);
 		layer_add_child(&window.layer, &dayTransition.day[i].layerDay.layer);			
 		text_layer_set_text(&dayTransition.day[i].layerDay,dayText);		
-		
+		//offset -= prevDay;
 		dayTransition.day[i].isSplit = false;//DEBUG	
 	}
 }
 
-/*void DayTransitionMiddleSetup(AppContextRef ctx){
-	
-}*/
-
 void OpeningAnimationStopped(Animation* animation, bool finished, void* context) 
-{
+{	
 	dayTransition.layerTextMonthFrame = LAYER_TEXT_MONTH_FRAME;	
 	//we need to remove this layer, and redraw it, but black BG. so the inverter layer will work right.
 	layer_remove_from_parent(&dayTransition.layerDayTrans.layer);
@@ -1109,8 +1156,8 @@ void OpeningAnimationStopped(Animation* animation, bool finished, void* context)
 	}
 	else
 	{
-		//text_layer_set_text(&dayTransition.layerTextMonth, monthText);
-		text_layer_set_text(&dayTransition.layerTextMonth, "6");
+		//static char month = (char)(((int)'0')+monthText[1]);
+		text_layer_set_text(&dayTransition.layerTextMonth, &monthText[1]);
 	}
 	
 	dayTransition.layerTextYearFrame = LAYER_TEXT_YEAR_FRAME;
@@ -1178,13 +1225,20 @@ void OpeningAnimationStopped(Animation* animation, bool finished, void* context)
 	animation_schedule(&dayTransition.day[3].slideLeftDayAnimation.animation);
 	animation_set_duration(&dayTransition.day[3].slideLeftImgAnimation.animation, slideAnimationDuration);
 	animation_set_delay(&dayTransition.day[3].slideLeftImgAnimation.animation, slideAnimationDelay);
-	animation_schedule(&dayTransition.day[3].slideLeftImgAnimation.animation);
 	
-	/*animation_set_handlers(&dayTransition.day[3].slideLeftImgAnimation.animation, (AnimationHandlers){
+	//only set handlers on the last frame.
+	animation_set_handlers(&dayTransition.day[3].slideLeftImgAnimation.animation, (AnimationHandlers){
 		.stopped = (AnimationStoppedHandler)SlidingAnimationStopped
-	}, (void*) context);*/
+	}, context);
+	animation_schedule(&dayTransition.day[3].slideLeftImgAnimation.animation);
+
+	//animation_schedule(&dayTransition.closingAnimation.animation);
+	/*property_animation_init_layer_frame(&dayTransition.closingAnimation, &dayTransition.layerDayTrans.layer, &dayTransition.endRect,&dayTransition.startRect);
+	animation_schedule(&dayTransition.closingAnimation.animation);	*/
 	
-	/*for (int i = 0; i < 4; i++)
+	/* for some reasoon this didn't work so i had to manually set everything
+	*whywithhands*'
+	for (int i = 0; i < 4; i++)
 	{
 		//perhaps i should just have all the texts on 1 layer, and just write to those frames? dunno if possible, need to check
 		//incase not, doing it the complax way.
@@ -1218,6 +1272,8 @@ void OpeningAnimationStopped(Animation* animation, bool finished, void* context)
 
 void DayTransition(AppContextRef ctx)
 {
+	
+	//dayTrans* dayTransition =  (dayTrans*) ctx;
 	isTransitioning = true;
 		//setup
 	dayTransition.startRect = START_RECT;
@@ -1227,16 +1283,50 @@ void DayTransition(AppContextRef ctx)
 	bitmap_layer_set_background_color(&dayTransition.layerDayTrans, GColorWhite);
 	layer_add_child(&window.layer, &dayTransition.layerDayTrans.layer);
 	
+	//closing animation
+	
+
+
+	
+	
 	//opening bar animation
 	property_animation_init_layer_frame(&dayTransition.openingAnimation, &dayTransition.layerDayTrans.layer,&dayTransition.startRect,&dayTransition.endRect);
 	animation_set_duration(&dayTransition.openingAnimation.animation, openAnimationDuration);
 	animation_set_delay(&dayTransition.openingAnimation.animation, openAnimationDelay);
   	animation_set_handlers(&dayTransition.openingAnimation.animation, (AnimationHandlers){
 	.stopped = (AnimationStoppedHandler)OpeningAnimationStopped
-	}, (void *)ctx);
+	}, (void*)ctx);
 	animation_schedule(&dayTransition.openingAnimation.animation);
 	get_time(&dayTransition.tm);
     dayTransition.tick.tick_time = &dayTransition.tm;
+	
+	/*
+	property_animation_init_layer_frame(&dayTransition.closingAnimation, &dayTransition.layerDayTrans.layer,&dayTransition.endRect,&dayTransition.startRect);
+	animation_set_duration( &dayTransition.closingAnimation.animation, closingAnimationDuration);
+	animation_set_delay(&dayTransition.closingAnimation.animation, closingAnimationDelay);
+	animation_set_handlers(&dayTransition.closingAnimation.animation, (AnimationHandlers){
+	.stopped = (AnimationStoppedHandler)ClosingAnimationStopped,
+	.started = (AnimationStartedHandler)ClosingAnimationStarted
+	}, (void*)ctx);*/
+	
+	/*property_animation_init_layer_frame(&dayTransition.closingAnimation, &dayTransition.layerDayTrans.layer, &dayTransition.endRect,&dayTransition.startRect);
+	animation_set_duration( &dayTransition.closingAnimation.animation, closingAnimationDuration);
+	animation_set_delay(&dayTransition.closingAnimation.animation, closingAnimationDelay);
+	animation_schedule(&dayTransition.closingAnimation.animation);	
+		animation_set_handlers(&dayTransition.day[3].slideLeftImgAnimation.animation, (AnimationHandlers){
+		.stopped = (AnimationStoppedHandler)SlidingAnimationStopped
+	/}, (void*) dayTransition);
+	two things, a it crashes if you try to leave the face early (probably due to the schedulings?)
+	b, maybe include #2 with the de-ints
+	3) not sure why it's crashing anyways at the stopped....'
+		4) need to deint the layerDayTrans.Layer;
+	may just throw up a black layer (or two) and have them expand over each other to cover up the invert layer (but it may need to be destroyed first)
+	but we now know it's all in the context stuff...*/
+	
+		
+		//yeah, the issue is definitely with the second void*ctx stuff.
+			//or even the animation started, as it doesn't even start to decompose...
+	
 	/*
 	//request_weather();
 	//get weather info (may have to do @ very, very, start)
@@ -1324,6 +1414,7 @@ void handle_init(AppContextRef ctx) {
 void handle_deinit(AppContextRef ctx) 
 {
 	(void)ctx;
+		animation_unschedule_all();
 		bmp_deinit_container(&background_image);
 		bmp_deinit_container(&imgWeather);
 		bmp_deinit_container(&imgWord_BLACK);
