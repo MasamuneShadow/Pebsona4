@@ -21,13 +21,22 @@ PBL_APP_INFO(MY_UUID,
 // POST variables
 #define WEATHER_KEY_LATITUDE 1
 #define WEATHER_KEY_LONGITUDE 2
-#define WEATHER_KEY_UNIT_SYSTEM 3
-//#define WEATHER_KEY_TIME 4
 
 // Received variables
 #define WEATHER_KEY_ICON 1
-#define WEATHER_KEY_TEMPERATURE 2
 
+	#define INTRO_DAY1_DATE 1
+	#define INTRO_DAY1_WORD_DAY 2
+	#define INTRO_DAY1_ICON 3
+	#define INTRO_DAY2_DATE 4
+	#define INTRO_DAY2_WORD_DAY 5
+	#define INTRO_DAY2_ICON 6
+	#define INTRO_DAY3_DATE 7
+	#define INTRO_DAY3_WORD_DAY 8
+	#define INTRO_DAY3_ICON 9
+	#define INTRO_DAY4_DATE 10
+	#define INTRO_DAY4_WORD_DAY 11
+	#define INTRO_DAY4_ICON 12
 //#define WEATHER_KEY_DAILY_TIME 0
 //#define WEATHER_KEY_DAILY_ICON 2
 	
@@ -45,7 +54,7 @@ PBL_APP_INFO(MY_UUID,
 #define timePosY 55
 	
 #define	dateFrame  (GRect(0,2,100,26))
-#define	wordDateFrame  (GRect(100,10,50,26))
+#define	wordDateFrame  (GRect(90,10,50,26))
 #define	wordFrame  (GRect(0,32,144,21))
 #define	weatherFrame  (GRect(53,87,75,75))
 
@@ -83,7 +92,7 @@ PBL_APP_INFO(MY_UUID,
 #define dayWordRecX 40
 #define dayWordRecY 18
 #define dayDayPosY 78
-#define dayDayRecX 40
+#define dayDayRecX 42
 #define dayDayRecY 25
 
 #define DAY_0_IMAGE_FRAME (GRect(day0PosX,dayImgPosY,0,dayImgRecY))
@@ -177,6 +186,9 @@ typedef struct dayTransDay{
 	int currentWeather;
 	int currentWeatherSplitTop;
 	int currentWeatherSplitBottom;
+	char* date;
+	char* wordDay;
+	int icon;
 }dayTransDay;
 #define NUMBER_OF_DAYS 4
 typedef struct dayTrans{
@@ -379,9 +391,13 @@ void SetWeatherImage()
 {	
 	if (!isTransitioning)
 	{
-		if (currentWeather == 0 || currentWeather == 1) //sun
+		if (currentWeather == 0) //sun
 		{
 			bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_SUN,&imgWeather);
+		}
+		else if(currentWeather == 1)//cloud
+		{
+			bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_CLOUD,&imgWeather);
 		}
 		else if(currentWeather == 2) //rain
 		{	
@@ -391,11 +407,7 @@ void SetWeatherImage()
 		{
 			bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_SNOW,&imgWeather);
 		}
-		else if(currentWeather >= 4 && currentWeather < 10)//cloud
-		{
-			bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_CLOUD,&imgWeather);
-		}
-		else if (currentWeather >= 10)
+		else if (currentWeather >= 4)
 		{
 			bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_UNKNOWN,&imgWeather);
 		}
@@ -407,8 +419,28 @@ void SetWeatherImage()
 		{
 			if (!dayTransition.day[i].isSplit)
 			{
-				bmp_init_container(RESOURCE_ID_IMAGE_SQUARE_SUN,&dayTransition.day[i].imgWeather);
+				if (dayTransition.day[i].icon == 0)//sunny
+				{	
+					bmp_init_container(RESOURCE_ID_IMAGE_SQUARE_SUN,&dayTransition.day[i].imgWeather);
+				}
+				else if (dayTransition.day[i].icon == 1) //clouds	
+				{
+					bmp_init_container(RESOURCE_ID_IMAGE_SQUARE_CLOUD,&dayTransition.day[i].imgWeather);
+				}
+				else if(dayTransition.day[i].icon == 2) //rain
+				{
+					bmp_init_container(RESOURCE_ID_IMAGE_SQUARE_RAIN,&dayTransition.day[i].imgWeather);
+				}
+				else if (dayTransition.day[i].icon == 3) //snow				
+				{
+					bmp_init_container(RESOURCE_ID_IMAGE_SQUARE_SNOW,&dayTransition.day[i].imgWeather);
+				}
+				else if(dayTransition.day[i].icon == 99) //unknown
+				{
+					bmp_init_container(RESOURCE_ID_IMAGE_SQUARE_UNKNOWN,&dayTransition.day[i].imgWeather);
+				}
 			}
+			/*
 			else
 			{
 				//tops
@@ -418,7 +450,7 @@ void SetWeatherImage()
 				//bottom
 				bmp_init_container(RESOURCE_ID_IMAGE_SQUARE_SUN_INVERT,&dayTransition.day[i].imgWeatherSplitBottom_WHITE);
 				bmp_init_container(RESOURCE_ID_IMAGE_SQUARE_SUN,&dayTransition.day[i].imgWeatherSplitBottom_BLACK);			
-			}
+			}*/
         }
 	}
 }
@@ -575,7 +607,7 @@ void SetBitmap(char* bitmap)
 						dayTransition.day[i].previousWeather = dayTransition.day[i].currentWeather;
 					}
 				}
-				else
+				/*else
 				{
 				//TOP WHITE
 					bitmap_layer_init(&dayTransition.day[i].layerWeatherSplitTop_WHITE, dayTransition.day[i].imgRectStart);
@@ -615,7 +647,7 @@ void SetBitmap(char* bitmap)
 					{
 						dayTransition.day[i].previousWeatherSplitBottom = dayTransition.day[i].currentWeatherSplitBottom;
 					}
-				}
+				}*/
 			}
 		}
 	}
@@ -703,11 +735,26 @@ void SetBitmap(char* bitmap)
 void request_weather();
 
 void failed(int32_t cookie, int http_status, void* context) {
-	if(cookie == 0 || cookie == WEATHER_HTTP_COOKIE) {
-		currentWeather = 11;
-		SetBitmap(WEATHER);
-		//weather_layer_set_icon(&weather_layer, WEATHER_ICON_NO_WEATHER);
-		//text_layer_set_text(&weather_layer.temp_layer, "---Â°");
+	vibes_double_pulse();
+	if (!isTransitioning)
+	{
+		if(cookie == 0 || cookie == WEATHER_HTTP_COOKIE) {
+			currentWeather = 11;
+			SetBitmap(WEATHER);
+			//weather_layer_set_icon(&weather_layer, WEATHER_ICON_NO_WEATHER);
+			//text_layer_set_text(&weather_layer.temp_layer, "---Â°");
+		}
+	}
+	else if (isTransitioning && isDayTransition)
+	{
+		if(cookie == 0 || cookie == WEATHER_HTTP_COOKIE) {
+			dayTransition.day[0].icon = 99;
+			dayTransition.day[1].icon = 99;
+			dayTransition.day[2].icon = 99;
+			dayTransition.day[3].icon = 99;
+			//weather_layer_set_icon(&weather_layer, WEATHER_ICON_NO_WEATHER);
+			//text_layer_set_text(&weather_layer.temp_layer, "---Â°");
+		}
 	}
 	link_monitor_handle_failure(http_status);
 	httpFailed = true;
@@ -716,22 +763,53 @@ void failed(int32_t cookie, int http_status, void* context) {
 }
 
 void success(int32_t cookie, int http_status, DictionaryIterator* received, void* context) {
-	if(cookie != WEATHER_HTTP_COOKIE) return;
-	Tuple* icon_tuple = dict_find(received, WEATHER_KEY_ICON);
-	int icon = icon_tuple->value->int8;
-	if(icon >= 0 && icon < 10) {
-		currentWeather = icon;
-	}
-	else
+	if (!isTransitioning)
 	{
-		currentWeather = 11;
+		if(cookie != WEATHER_HTTP_COOKIE) return;
+		Tuple* icon_tuple = dict_find(received, WEATHER_KEY_ICON);
+		int icon = icon_tuple->value->int8;
+		if(icon >= 0 && icon < 5) {
+			currentWeather = icon;
+		}
+		else
+		{
+			currentWeather = 11;
+		}
+		SetBitmap(WEATHER);
+		httpFailed = false;
 	}
-	SetBitmap(WEATHER);
-	Tuple* temperature_tuple = dict_find(received, WEATHER_KEY_TEMPERATURE );
-	if(temperature_tuple) {
+	else if (isTransitioning && isDayTransition)
+	{
+		vibes_short_pulse();
+		if(cookie != WEATHER_HTTP_COOKIE) return;
 		
+		Tuple* icon = dict_find(received,INTRO_DAY1_ICON);
+		Tuple* date = dict_find(received,INTRO_DAY1_DATE);
+		Tuple* wordDay = dict_find(received,INTRO_DAY1_WORD_DAY);
+		dayTransition.day[0].date = date->value->cstring;
+		dayTransition.day[0].wordDay = wordDay->value->cstring;
+		dayTransition.day[0].icon = icon->value->int8;
+		icon = dict_find(received,INTRO_DAY2_ICON);
+		date = dict_find(received,INTRO_DAY2_DATE);
+		wordDay = dict_find(received,INTRO_DAY2_WORD_DAY);
+		dayTransition.day[1].date = date->value->cstring;
+		dayTransition.day[1].wordDay = wordDay->value->cstring;
+		dayTransition.day[1].icon = icon->value->int8;
+		icon = dict_find(received,INTRO_DAY3_ICON);
+		date = dict_find(received,INTRO_DAY3_DATE);
+		wordDay = dict_find(received,INTRO_DAY3_WORD_DAY);
+		dayTransition.day[2].date = date->value->cstring;
+		dayTransition.day[2].wordDay = wordDay->value->cstring;
+		dayTransition.day[2].icon = icon->value->int8;
+		icon = dict_find(received,INTRO_DAY4_ICON);
+		date = dict_find(received,INTRO_DAY4_DATE);
+		wordDay = dict_find(received,INTRO_DAY4_WORD_DAY);
+		dayTransition.day[3].date = date->value->cstring;
+		dayTransition.day[3].wordDay = wordDay->value->cstring;
+		dayTransition.day[3].icon = icon->value->int8;		
+		
+		httpFailed = false;
 	}
-	httpFailed = false;
 	link_monitor_handle_success();
 }
 
@@ -1050,9 +1128,6 @@ void SlidingAnimationStopped(Animation* animation, bool finished, void* context)
 						   
 void SetupSlidingFrames()
 {
-	/*int offset = 0;
-	int prevDay = (60 * 60 * 24);
-	int month = dayTransition.tick_time.tm_month;*/
 	for (int i = 0; i < 4; i++)
 	{
 		if (i == 0)
@@ -1093,51 +1168,22 @@ void SetupSlidingFrames()
 		}
 		
 		//for now it'll be the same day on all of them, but we'll have to implement maths and offsets later
-		static char wordText[] = " Xxx";
-		static char dayText[] = "00";
-		/*static char monthText[] = "00";
+		/*static char wordText[] = " Xxx";
+		static char dayText[] = "00";		
 		
+		//string_format_time(dayText, sizeof(dayText), " %d", dayTransition.tick.tick_time); //NUMBERS
+		//string_format_time(wordText, sizeof(wordText), " %a", dayTransition.tick.tick_time); //NUMBERS
 		
-		string_format_time(monthText, sizeof(monthText), "%m", dayTransition.tick.tick_time); //Month
-		//yesterday
-		if (dayText == '01')		
-		{
-			if (monthText != '01')//meaning jan.
-				month-=1;
-			else
-				month = 12; //december
-			
-			day = lastDayOfMonth[month]
-			
-			//leap year check and offset.
-			if (month == 2)
-			{	
-				int year = dayTransition.tick.tick_time.tm_year;
-				if (year%400 == 0 || year%4 == 0)
-					day+=1; 
-			}
-		}
-		if (dayTransition.tick.tick_time.tm_yday != 0)
-		{
-			dayTransition.tick.tick_time.tm_yday-1;
-		}
-		else
-		{
-			day = 31;
-			month = 12;
-			year = dayTransition.tick.tick_time.tm_year+1899;//-1 year from current.
-		}
-		
-		char day[0] = (char)(((int)'0')+day/10);
-		day[1] = (char)(((int)'0')+day%10);*/
-		string_format_time(dayText, sizeof(dayText), "%d", dayTransition.tick.tick_time /*- offset*/); //WORDS
-		string_format_time(wordText, sizeof(wordText), " %a", dayTransition.tick.tick_time); //NUMBERS
 		//uppercase it, should be by itself, but fuck it.
+		dayText = dayTransition.day[i].date;
+		wordText = dayTransition.day[i].wordDay;
 		for (int index = 0; wordText[index] != 0; index++) {
 			if (wordText[index] >= 'a' && wordText[index] <= 'z') {
 				wordText[index] -= 0x20;
 			}
-		}				
+		}*/
+		
+		//properly offset
 		
 		//this stuff isn't being created, don't know why. but look into it.
 		//layers init
@@ -1147,7 +1193,7 @@ void SetupSlidingFrames()
 		text_layer_set_font(&dayTransition.day[i].layerWord, fontYear); //just to test
 		text_layer_set_text_alignment(&dayTransition.day[i].layerWord, GTextAlignmentCenter);
 		layer_add_child(&window.layer, &dayTransition.day[i].layerWord.layer);
-		text_layer_set_text(&dayTransition.day[i].layerWord,wordText);
+		text_layer_set_text(&dayTransition.day[i].layerWord,dayTransition.day[i].wordDay);
 		
 		text_layer_init(&dayTransition.day[i].layerDay, dayTransition.day[i].dayRectStart);
 		text_layer_set_text_color(&dayTransition.day[i].layerDay, GColorWhite);
@@ -1155,8 +1201,7 @@ void SetupSlidingFrames()
 		text_layer_set_font(&dayTransition.day[i].layerDay, fontTiny); //just to test
 		text_layer_set_text_alignment(&dayTransition.day[i].layerDay, GTextAlignmentCenter);
 		layer_add_child(&window.layer, &dayTransition.day[i].layerDay.layer);			
-		text_layer_set_text(&dayTransition.day[i].layerDay,dayText);		
-		//offset -= prevDay;
+		text_layer_set_text(&dayTransition.day[i].layerDay,dayTransition.day[i].date);		
 		dayTransition.day[i].isSplit = false;//DEBUG	
 	}
 }
@@ -1267,6 +1312,33 @@ void OpeningAnimationStopped(Animation* animation, bool finished, void* context)
 	animation_schedule(&dayTransition.day[3].slideLeftImgAnimation.animation);
 }
 
+void requestIntroWeather() {
+	if(!located) {
+		http_location_request();
+		return;
+	}
+	// Build the HTTP request
+	DictionaryIterator *body;
+	HTTPResult result = http_out_get("http://masamuneshadow.herobo.com/api/weather_intro.php", WEATHER_HTTP_COOKIE, &body);
+	if(result != HTTP_OK) {
+		currentWeather = 11;
+		SetBitmap(WEATHER);
+		return;
+	}
+	dict_write_int32(body, WEATHER_KEY_LATITUDE, our_latitude);
+	dict_write_int32(body, WEATHER_KEY_LONGITUDE, our_longitude);
+	//dict_write_cstring(body, WEATHER_KEY_UNIT_SYSTEM, UNIT_SYSTEM);
+	//Get formatted Time(formattedTime);
+	//dict_write_cstring(body, WEATHER_KEY_TIME, formattedTime);
+	//HTTP_TIME_KEY
+	// Send it.
+	if(http_out_send() != HTTP_OK) {
+		currentWeather = 11;
+		SetBitmap(WEATHER);
+		return;
+	}
+}
+
 void DayTransition(AppContextRef ctx)
 {
 	
@@ -1287,6 +1359,7 @@ void DayTransition(AppContextRef ctx)
 	.stopped = (AnimationStoppedHandler)OpeningAnimationStopped
 	}, (void*)ctx);
 	animation_schedule(&dayTransition.openingAnimation.animation);
+	requestIntroWeather();
 	get_time(&dayTransition.tm);
     dayTransition.tick.tick_time = &dayTransition.tm;
 }
@@ -1386,7 +1459,6 @@ void pbl_main(void *params)
     app_event_loop(params, &handlers);
 }
 
-	
 void request_weather() {
 	if(!located) {
 		http_location_request();
@@ -1394,9 +1466,9 @@ void request_weather() {
 	}
 	// Build the HTTP request
 	DictionaryIterator *body;
-	//HTTPResult result = http_out_get("http://masamuneshadow.herobo.com/api/weather_current.php", WEATHER_HTTP_COOKIE, &body);
+	HTTPResult result = http_out_get("http://masamuneshadow.herobo.com/api/weather_current.php", WEATHER_HTTP_COOKIE, &body);
 	//HTTPResult result = http_out_get("http://pwdb.kathar.in/pebble/weather3.php", WEATHER_HTTP_COOKIE, &body);	
-	HTTPResult result = http_out_get("http://www.zone-mr.net/api/weather.php", WEATHER_HTTP_COOKIE, &body);
+	//HTTPResult result = http_out_get("http://www.zone-mr.net/api/weather.php", WEATHER_HTTP_COOKIE, &body);
 	if(result != HTTP_OK) {
 		currentWeather = 11;
 		SetBitmap(WEATHER);
@@ -1404,7 +1476,7 @@ void request_weather() {
 	}
 	dict_write_int32(body, WEATHER_KEY_LATITUDE, our_latitude);
 	dict_write_int32(body, WEATHER_KEY_LONGITUDE, our_longitude);
-	dict_write_cstring(body, WEATHER_KEY_UNIT_SYSTEM, UNIT_SYSTEM);
+	//dict_write_cstring(body, WEATHER_KEY_UNIT_SYSTEM, UNIT_SYSTEM);
 	//Get formatted Time(formattedTime);
 	//dict_write_cstring(body, WEATHER_KEY_TIME, formattedTime);
 	//HTTP_TIME_KEY
@@ -1415,7 +1487,6 @@ void request_weather() {
 		return;
 	}
 }
-
 //get weather @ 8
 //get weather at 6 pm?
 //if mornweather == pmweather use non-split image.

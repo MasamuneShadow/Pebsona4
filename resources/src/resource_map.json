@@ -1,6 +1,26 @@
 {
     "media": [
         {
+            "defName": "IMAGE_SQUARE_SNOW",
+            "type": "png",
+            "file": "images/square_snow.png"
+        },
+        {
+            "defName": "IMAGE_SQUARE_UNKNOWN",
+            "type": "png",
+            "file": "images/square_unknown.png"
+        },
+        {
+            "defName": "IMAGE_SQUARE_CLOUD",
+            "type": "png",
+            "file": "images/square_cloud.png"
+        },
+        {
+            "defName": "IMAGE_SQUARE_RAIN",
+            "type": "png",
+            "file": "images/square_rain.png"
+        },
+        {
             "defName": "IMAGE_SQUARE_SUN_INVERT",
             "type": "png",
             "file": "images/square_sun_invert.png"
