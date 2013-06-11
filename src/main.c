@@ -21,10 +21,11 @@ PBL_APP_INFO(MY_UUID,
 // POST variables
 #define WEATHER_KEY_LATITUDE 1
 #define WEATHER_KEY_LONGITUDE 2
-
+#define WEATHER_KEY_UNIT_SYSTEM 3
 // Received variables
 #define WEATHER_KEY_ICON 1
-
+#define WEATHER_KEY_TEMPERATURE 2
+	
 	#define INTRO_DAY1_DATE 1
 	#define INTRO_DAY1_WORD_DAY 2
 	#define INTRO_DAY1_ICON 3
@@ -65,51 +66,6 @@ PBL_APP_INFO(MY_UUID,
 #define	timeMinuteTensFrame  (GRect(48,timePosY,timeWidth,timeHeight))
 #define	timeMinuteOnesFrame  (GRect(68,timePosY,timeWidth, timeHeight))
 
-	//Animation Defines
-#define openAnimationDuration 500
-#define closingAnimationDuration 500
-#define slideAnimationDuration 600
-#define openAnimationDelay 250
-#define closingAnimationDelay 500
-#define slideAnimationDelay 250
-#define instantDuration 1
-#define LAYER_TEXT_MONTH_FRAME (GRect(46,0,52,42))
-#define LAYER_TEXT_YEAR_FRAME (GRect(46,50,52,26))
-#define START_RECT (GRect(72,0,0,168))
-#define END_RECT (GRect(46,0,52,168))
-
-//all of the images will be of the same size as the square, but thanks to the inverts, it'll work out w/ trans.
-#define day0PosX -50
-#define day1PosX 0
-#define day2PosX 52
-#define day3PosX 100
-#define day4PosX 147
-
-#define dayImgPosY 119
-#define dayImgRecX 40
-#define dayImgRecY 38
-#define dayWordPosY 95
-#define dayWordRecX 40
-#define dayWordRecY 18
-#define dayDayPosY 78
-#define dayDayRecX 42
-#define dayDayRecY 25
-
-#define DAY_0_IMAGE_FRAME (GRect(day0PosX,dayImgPosY,0,dayImgRecY))
-#define DAY_1_IMAGE_FRAME (GRect(day1PosX,dayImgPosY,dayImgRecX,dayImgRecY))
-#define DAY_2_IMAGE_FRAME (GRect(day2PosX,dayImgPosY,dayImgRecX,dayImgRecY))//highlighed frame
-#define	DAY_3_IMAGE_FRAME (GRect(day3PosX,dayImgPosY,dayImgRecX,dayImgRecY))
-#define DAY_4_IMAGE_FRAME (GRect(day4PosX,dayImgPosY,dayImgRecX,dayImgRecY))
-#define DAY_0_WORD_FRAME (GRect(day0PosX,dayWordPosY,0,dayWordRecY))
-#define DAY_1_WORD_FRAME (GRect(day1PosX,dayWordPosY,dayWordRecX,dayWordRecY))
-#define DAY_2_WORD_FRAME (GRect(day2PosX,dayWordPosY,dayWordRecX,dayWordRecY))
-#define DAY_3_WORD_FRAME (GRect(day3PosX,dayWordPosY,dayWordRecX,dayWordRecY))
-#define DAY_4_WORD_FRAME (GRect(day4PosX,dayWordPosY,dayWordRecX,dayWordRecY))	
-#define DAY_0_DAY_FRAME  (GRect(day0PosX,dayDayPosY,0,dayDayRecY))
-#define DAY_1_DAY_FRAME  (GRect(day1PosX,dayDayPosY,dayDayRecX,dayDayRecY))
-#define DAY_2_DAY_FRAME  (GRect(day2PosX,dayDayPosY,dayDayRecX,dayDayRecY))
-#define DAY_3_DAY_FRAME  (GRect(day3PosX,dayDayPosY,dayDayRecX,dayDayRecY))
-#define DAY_4_DAY_FRAME  (GRect(day4PosX,dayDayPosY,dayDayRecX,dayDayRecY))
 	
 //Once weather support gets introduced, the "Sunny" icon will change to reflect said weather.
 //ingame there are:
@@ -156,7 +112,60 @@ BitmapLayer layerWord_WHITE;
 BitmapLayer layerWord_BLACK;
 BitmapLayer layerWeather;
 
+/*
+About the Day to Day Transitions...
+God damn call is too slow and I don't think there is anything I can do about it without causing an inexcusable power drain.
+So commenting out for now, then going to work on the W2W Transition & Calls from my website.
+So sorry about this.
+	*/
 //structs added later, don't want to fix what isn't broken, so I won't be going back and updating the previous code.
+/* Into Trans Defines
+//Animation Defines
+#define openAnimationDuration 500
+#define closingAnimationDuration 500
+#define slideAnimationDuration 600
+#define openAnimationDelay 250
+#define closingAnimationDelay 500
+#define slideAnimationDelay 250
+#define instantDuration 1
+#define LAYER_TEXT_MONTH_FRAME (GRect(46,0,52,42))
+#define LAYER_TEXT_YEAR_FRAME (GRect(46,50,52,26))
+#define START_RECT (GRect(72,0,0,168))
+#define END_RECT (GRect(46,0,52,168))
+
+//all of the images will be of the same size as the square, but thanks to the inverts, it'll work out w/ trans.
+#define day0PosX -50
+#define day1PosX 0
+#define day2PosX 52
+#define day3PosX 100
+#define day4PosX 147
+
+#define dayImgPosY 119
+#define dayImgRecX 40
+#define dayImgRecY 38
+#define dayWordPosY 95
+#define dayWordRecX 40
+#define dayWordRecY 18
+#define dayDayPosY 78
+#define dayDayRecX 42
+#define dayDayRecY 25
+
+#define DAY_0_IMAGE_FRAME (GRect(day0PosX,dayImgPosY,0,dayImgRecY))
+#define DAY_1_IMAGE_FRAME (GRect(day1PosX,dayImgPosY,dayImgRecX,dayImgRecY))
+#define DAY_2_IMAGE_FRAME (GRect(day2PosX,dayImgPosY,dayImgRecX,dayImgRecY))//highlighed frame
+#define	DAY_3_IMAGE_FRAME (GRect(day3PosX,dayImgPosY,dayImgRecX,dayImgRecY))
+#define DAY_4_IMAGE_FRAME (GRect(day4PosX,dayImgPosY,dayImgRecX,dayImgRecY))
+#define DAY_0_WORD_FRAME (GRect(day0PosX,dayWordPosY,0,dayWordRecY))
+#define DAY_1_WORD_FRAME (GRect(day1PosX,dayWordPosY,dayWordRecX,dayWordRecY))
+#define DAY_2_WORD_FRAME (GRect(day2PosX,dayWordPosY,dayWordRecX,dayWordRecY))
+#define DAY_3_WORD_FRAME (GRect(day3PosX,dayWordPosY,dayWordRecX,dayWordRecY))
+#define DAY_4_WORD_FRAME (GRect(day4PosX,dayWordPosY,dayWordRecX,dayWordRecY))	
+#define DAY_0_DAY_FRAME  (GRect(day0PosX,dayDayPosY,0,dayDayRecY))
+#define DAY_1_DAY_FRAME  (GRect(day1PosX,dayDayPosY,dayDayRecX,dayDayRecY))
+#define DAY_2_DAY_FRAME  (GRect(day2PosX,dayDayPosY,dayDayRecX,dayDayRecY))
+#define DAY_3_DAY_FRAME  (GRect(day3PosX,dayDayPosY,dayDayRecX,dayDayRecY))
+#define DAY_4_DAY_FRAME  (GRect(day4PosX,dayDayPosY,dayDayRecX,dayDayRecY))
+
 typedef struct dayTransDay{
 	TextLayer 		layerWord;
 	TextLayer 		layerDay;
@@ -211,27 +220,7 @@ typedef struct dayTrans{
 	PropertyAnimation holdAnimation;	
 }dayTrans;
 dayTrans dayTransition;
-//dayTrans globalDayTransition;
-//Word Transitions
-/*Layer transition_word_layer;
-Layer transition_block_1_layer;
-Layer transition_block_2_layer;
-Layer transition_square_layer;*/
 
-/*static uint8_t WEATHER_ICONS[] = {
-	RESOURCE_ID_IMAGE_CLEAR_DAY,
-	RESOURCE_ID_ICON_CLEAR_NIGHT,
-	RESOURCE_ID_ICON_RAIN,
-	RESOURCE_ID_ICON_SNOW,
-	RESOURCE_ID_ICON_SLEET,
-	RESOURCE_ID_ICON_WIND,
-	RESOURCE_ID_ICON_FOG,
-	RESOURCE_ID_ICON_CLOUDY,
-	RESOURCE_ID_ICON_PARTLY_CLOUDY_DAY,
-	RESOURCE_ID_ICON_PARTLY_CLOUDY_NIGHT,
-	RESOURCE_ID_ICON_ERROR,
-};
-*/
 static const int lastDayOfMonth[] = {
 	31,
 	28,
@@ -246,6 +235,62 @@ static const int lastDayOfMonth[] = {
 	30,
 	31
 };
+*/
+
+//Word Transitions
+//Animation Defines
+#define startAnimationDuration 500
+#define exitAnimationDuration 500
+#define flipAnimationDuration 600
+#define startAnimationDelay 250
+#define exitAnimationDelay 250
+#define flipAnimationDelay 250
+//#define LAYER_TEXT_YEAR_FRAME (GRect(46,50,52,26))
+#define START_RECT (GRect(144,0,52,168))
+#define END_RECT (GRect(-46,0,52,168))
+
+//all of the images will be of the same size as the square, but thanks to the inverts, it'll work out w/ trans.
+//fix the defines, make them app. for this transition.
+#define squarePosX 145
+#define squarePosY 18
+#define squareRecX 108
+#define squareRecY 108
+#define	wordFrame  (GRect(0,32,144,21))
+#define WORD_TEXT_FRAME (GRect(squarePosX,61,144,21))
+//#define WORD_SQUARE_FRAME_START (GRect(squarePosX,squarePosY,squareRecX,squareRecY))
+	#define WORD_SQUARE_FRAME_START (GRect(15,15,15,15))
+#define WORD_SQUARE_FRAME_HOLD (GRect(72,squarePosY,squareRecX,squareRecY))
+#define WORD_SQUARE_FRAME_END (GRect(-108,squarePosY,squareRecX,squareRecY))
+#define	BACKGROUND_FRAME (GRect(0,0,144,168)) //the size of the window.
+	
+typedef struct wordTrans{
+	BitmapLayer layerBackground;
+	BitmapLayer layerSquare;
+	//InverterLayer layerIn;
+	BitmapLayer layerWord_WHITE;
+	BitmapLayer layerWord_BLACK;
+	GRect layerWordFrame;
+	GRect startRect;
+	GRect holdRect;
+	//GRect holdHalfRect;
+	GRect endRect;	
+	GRect backgroundRect;
+	PropertyAnimation wordAnimationStart_WHITE;
+	PropertyAnimation wordAnimationStart_BLACK;
+	PropertyAnimation wordAnimationHold_WHITE;
+	PropertyAnimation wordAnimationHold_BLACK;
+	PropertyAnimation wordAnimationExit_WHITE;
+	PropertyAnimation wordAnimationExit_BLACK;
+	PropertyAnimation startAnimation;	
+	PropertyAnimation exitAnimation;
+	PropertyAnimation flipAnimationFirstHalf;
+	PropertyAnimation flipAnimationSecondHalf;
+	PropertyAnimation holdAnimation;	
+	int previousWordHolder;
+	int currentWordHolder;	
+}wordTrans;
+wordTrans wordTransition;
+
 static const int DIGIT_IMAGE_RESOURCE_IDS[] = {
   RESOURCE_ID_IMAGE_DIGIT_0,
   RESOURCE_ID_IMAGE_DIGIT_1,
@@ -305,14 +350,16 @@ int previousWeather;
 
 GFont fontDate;
 GFont fontAbbr;
-GFont fontMonth; //29
+ResHandle resDate;
+ResHandle resAbbr;
+//Transition Font
+/*GFont fontMonth; //29
 GFont fontYear;	//29
 GFont fontTiny;
 ResHandle resMonth;	//29
 ResHandle resYear;	//29
-ResHandle resDate;
-ResHandle resAbbr;
 ResHandle resTiny;
+*/
 
 /*=========Bools============*/
 bool isDayTransition = false;
@@ -320,28 +367,12 @@ bool isWordTransition = false;
 bool isTransitioning = false;
 bool httpFailed;
 bool Initializing = true;
-//Day Transitions
-/*
-Layer DayGraphic
-TextLayer text_numday_layer;
-TextLayer text_monthday_layer;
-*/
-/* Need to figure out how to properly rotate a square into a diamond
-https://github.com/pebble/pebblekit/blob/master/Pebble/demos/feature_image_transparent_rotate/src/feature_image_transparent_rotate.c
-just make a square, and then use that code to rotate it 45 degrees (or however much I want)
-
-bam that easy.
-
-void square_layer_update_callback(Layer *me, GContext* ctx) {
-  (void)me;
-  graphics_context_set_stroke_color(ctx, GColorWhite); // TODO: Needed?
-  graphics_context_set_fill_color(ctx, GColorWhite);
-  graphics_fill_rect(ctx, GRect(12,0,120,50), 0, GCornersAll);
-}*/
 	
-	//Weather Stuff
+//Weather Stuff
 static int our_latitude, our_longitude;
 static bool located = false;
+
+void WordTransition(AppContextRef ctx);
 
 void SetWordImage()
 {	
@@ -412,6 +443,7 @@ void SetWeatherImage()
 			bmp_init_container(RESOURCE_ID_IMAGE_WEATHER_UNKNOWN,&imgWeather);
 		}
 	}
+	/*
 	else
 	{
 	//decypher the dates, but for now just set them all to sunny
@@ -440,7 +472,7 @@ void SetWeatherImage()
 					bmp_init_container(RESOURCE_ID_IMAGE_SQUARE_UNKNOWN,&dayTransition.day[i].imgWeather);
 				}
 			}
-			/*
+			
 			else
 			{
 				//tops
@@ -450,9 +482,9 @@ void SetWeatherImage()
 				//bottom
 				bmp_init_container(RESOURCE_ID_IMAGE_SQUARE_SUN_INVERT,&dayTransition.day[i].imgWeatherSplitBottom_WHITE);
 				bmp_init_container(RESOURCE_ID_IMAGE_SQUARE_SUN,&dayTransition.day[i].imgWeatherSplitBottom_BLACK);			
-			}*/
+			}
         }
-	}
+	}*/
 }
 
 
@@ -478,8 +510,16 @@ void RemoveAndDeIntBmp(char* bitmap)
 	
 	if (strcmp(bitmap,WORD) == 0 || strcmp(bitmap,ALL) == 0)
 	{
-		layer_remove_from_parent(&layerWord_WHITE.layer);
-		layer_remove_from_parent(&layerWord_BLACK.layer);
+		//if (!isTransitioning)
+		//{
+			layer_remove_from_parent(&layerWord_WHITE.layer);
+			layer_remove_from_parent(&layerWord_BLACK.layer);
+		/*}
+		else if (isWordTransition)
+		{
+			layer_remove_from_parent(&wordTransition.layerWord_WHITE.layer);
+			layer_remove_from_parent(&wordTransition.layerWord_BLACK.layer);
+		}*/
 		bmp_deinit_container(&imgWord_WHITE);
 		bmp_deinit_container(&imgWord_BLACK);
 	}
@@ -491,6 +531,7 @@ void RemoveAndDeIntBmp(char* bitmap)
 			layer_remove_from_parent(&layerWeather.layer);
 			bmp_deinit_container(&imgWeather);
 		}
+		/*
 		else
 		{
 			for (int i = 0; i < 4; i++)
@@ -512,7 +553,7 @@ void RemoveAndDeIntBmp(char* bitmap)
 					bmp_deinit_container(&dayTransition.day[i].imgWeatherSplitBottom_BLACK);
 				}
 			}
-		}
+		}*/
 	}
 
 	if (strcmp (bitmap,TIME) == 0 || strcmp(bitmap,ALL) == 0)
@@ -558,20 +599,46 @@ void SetBitmap(char* bitmap)
 	{    
 		SetWordImage();			
 		//black background, takes the white and makes them black, all else are not drawn
-		bitmap_layer_init(&layerWord_WHITE,wordFrame);
-		bitmap_layer_set_bitmap(&layerWord_WHITE,&imgWord_WHITE.bmp);
-		bitmap_layer_set_background_color(&layerWord_WHITE,GColorClear);
-		bitmap_layer_set_compositing_mode(&layerWord_WHITE, GCompOpClear);
-		layer_add_child(&window.layer, &layerWord_WHITE.layer);
-		layer_mark_dirty(&layerWord_WHITE.layer);
+		/*if (isTransitioning)
+		{
+			bitmap_layer_init(&wordTransition.layerWord_WHITE,wordTransition.layerWordFrame);
+			bitmap_layer_set_bitmap(&wordTransition.layerWord_WHITE,&imgWord_WHITE.bmp);
+			bitmap_layer_set_background_color(&wordTransition.layerWord_WHITE,GColorClear);
+			bitmap_layer_set_compositing_mode(&wordTransition.layerWord_WHITE, GCompOpClear);
+			layer_add_child(&window.layer, &wordTransition.layerWord_WHITE.layer);
+			layer_mark_dirty(&wordTransition.layerWord_WHITE.layer);
+		}
+		else
+		{*/
+			bitmap_layer_init(&layerWord_WHITE,wordFrame);
+			bitmap_layer_set_bitmap(&layerWord_WHITE,&imgWord_WHITE.bmp);
+			bitmap_layer_set_background_color(&layerWord_WHITE,GColorClear);
+			bitmap_layer_set_compositing_mode(&layerWord_WHITE, GCompOpClear);
+			layer_add_child(&window.layer, &layerWord_WHITE.layer);
+			layer_mark_dirty(&layerWord_WHITE.layer);
+		//}
+		
 
 		// takes the white and doesn't draw it if it itercets with a black?
-		bitmap_layer_init(&layerWord_BLACK,wordFrame);
-		bitmap_layer_set_bitmap(&layerWord_BLACK, &imgWord_BLACK.bmp); //or .layer?
-		bitmap_layer_set_background_color(&layerWord_BLACK,GColorClear);
-		bitmap_layer_set_compositing_mode(&layerWord_BLACK, GCompOpOr);
-		layer_add_child(&window.layer, &layerWord_BLACK.layer);
-		layer_mark_dirty(&layerWord_BLACK.layer);			
+		//bitmap_layer_init(&layerWord_BLACK,wordFrame);
+		/*if (isTransitioning)
+		{
+			bitmap_layer_init(&wordTransition.layerWord_BLACK,wordTransition.layerWordFrame);
+			bitmap_layer_set_bitmap(&wordTransition.layerWord_BLACK, &imgWord_BLACK.bmp); //or .layer?
+			bitmap_layer_set_background_color(&wordTransition.layerWord_BLACK,GColorClear);
+			bitmap_layer_set_compositing_mode(&wordTransition.layerWord_BLACK, GCompOpOr);
+			layer_add_child(&window.layer, &wordTransition.layerWord_BLACK.layer);
+			layer_mark_dirty(&wordTransition.layerWord_BLACK.layer);	
+		}
+		else
+		{*/
+			bitmap_layer_init(&layerWord_BLACK,wordFrame);
+			bitmap_layer_set_bitmap(&layerWord_BLACK, &imgWord_BLACK.bmp); //or .layer?
+			bitmap_layer_set_background_color(&layerWord_BLACK,GColorClear);
+			bitmap_layer_set_compositing_mode(&layerWord_BLACK, GCompOpOr);
+			layer_add_child(&window.layer, &layerWord_BLACK.layer);
+			layer_mark_dirty(&layerWord_BLACK.layer);	
+		//}		
 	}
 	else if (strcmp(bitmap,WEATHER) == 0)
 	{
@@ -589,6 +656,7 @@ void SetBitmap(char* bitmap)
 				previousWeather = currentWeather;
 			}
 		}
+		/*
 		else
 		{		
 			for (int i = 0; i < 4; i++)
@@ -607,7 +675,7 @@ void SetBitmap(char* bitmap)
 						dayTransition.day[i].previousWeather = dayTransition.day[i].currentWeather;
 					}
 				}
-				/*else
+				else
 				{
 				//TOP WHITE
 					bitmap_layer_init(&dayTransition.day[i].layerWeatherSplitTop_WHITE, dayTransition.day[i].imgRectStart);
@@ -647,11 +715,10 @@ void SetBitmap(char* bitmap)
 					{
 						dayTransition.day[i].previousWeatherSplitBottom = dayTransition.day[i].currentWeatherSplitBottom;
 					}
-				}*/
+				}
 			}
-		}
+		}*/
 	}
-	/*else if (strcmp(bitmap,DATE) == 0){}*/
 	else if (strcmp(bitmap,TIME) == 0)
 	{
 		SetTimeImage();			
@@ -734,18 +801,47 @@ void SetBitmap(char* bitmap)
 
 void request_weather();
 
+/*void failed(int32_t cookie, int http_status, void* context) {
+	if(cookie == 0 || cookie == WEATHER_HTTP_COOKIE) {
+		currentWeather = 11;
+		SetBitmap(WEATHER);
+		//weather_layer_set_icon(&weather_layer, WEATHER_ICON_NO_WEATHER);
+		//text_layer_set_text(&weather_layer.temp_layer, "---Â°");
+	}
+	link_monitor_handle_failure(http_status);
+	httpFailed = true;
+	//Re-request the location and subsequently weather on next minute tick
+	located = false;
+}
+void success(int32_t cookie, int http_status, DictionaryIterator* received, void* context) {
+	if(cookie != WEATHER_HTTP_COOKIE) return;
+	Tuple* icon_tuple = dict_find(received, WEATHER_KEY_ICON);
+	int icon = icon_tuple->value->int8;
+	if(icon >= 0 && icon < 10) {
+		currentWeather = icon;
+	}
+	else
+	{
+		currentWeather = 11;
+	}
+	SetBitmap(WEATHER);
+	Tuple* temperature_tuple = dict_find(received, WEATHER_KEY_TEMPERATURE );
+	if(temperature_tuple) {
+
+	}
+	httpFailed = false;
+	link_monitor_handle_success();
+}*/
+
 void failed(int32_t cookie, int http_status, void* context) {
-	vibes_double_pulse();
 	if (!isTransitioning)
 	{
 		if(cookie == 0 || cookie == WEATHER_HTTP_COOKIE) {
 			currentWeather = 11;
 			SetBitmap(WEATHER);
-			//weather_layer_set_icon(&weather_layer, WEATHER_ICON_NO_WEATHER);
-			//text_layer_set_text(&weather_layer.temp_layer, "---Â°");
 		}
 	}
-	else if (isTransitioning && isDayTransition)
+	/*else if (isTransitioning && isDayTransition)
 	{
 		if(cookie == 0 || cookie == WEATHER_HTTP_COOKIE) {
 			dayTransition.day[0].icon = 99;
@@ -755,11 +851,11 @@ void failed(int32_t cookie, int http_status, void* context) {
 			//weather_layer_set_icon(&weather_layer, WEATHER_ICON_NO_WEATHER);
 			//text_layer_set_text(&weather_layer.temp_layer, "---Â°");
 		}
-	}
-	link_monitor_handle_failure(http_status);
-	httpFailed = true;
+	}*/
+	//link_monitor_handle_failure(http_status);
+	//httpFailed = true;
 	//Re-request the location and subsequently weather on next minute tick
-	located = false;
+	//located = false;
 }
 
 void success(int32_t cookie, int http_status, DictionaryIterator* received, void* context) {
@@ -768,6 +864,7 @@ void success(int32_t cookie, int http_status, DictionaryIterator* received, void
 		if(cookie != WEATHER_HTTP_COOKIE) return;
 		Tuple* icon_tuple = dict_find(received, WEATHER_KEY_ICON);
 		int icon = icon_tuple->value->int8;
+		
 		if(icon >= 0 && icon < 5) {
 			currentWeather = icon;
 		}
@@ -776,8 +873,9 @@ void success(int32_t cookie, int http_status, DictionaryIterator* received, void
 			currentWeather = 11;
 		}
 		SetBitmap(WEATHER);
-		httpFailed = false;
+		//httpFailed = false;
 	}
+	/*
 	else if (isTransitioning && isDayTransition)
 	{
 		vibes_short_pulse();
@@ -809,8 +907,12 @@ void success(int32_t cookie, int http_status, DictionaryIterator* received, void
 		dayTransition.day[3].icon = icon->value->int8;		
 		
 		httpFailed = false;
-	}
-	link_monitor_handle_success();
+	}*/
+	//link_monitor_handle_success();
+}
+
+void set_timer(AppContextRef ctx) {
+	app_timer_send_event(ctx, 900000, 1);
 }
 
 void location(float latitude, float longitude, float altitude, float accuracy, void* context) {
@@ -818,7 +920,15 @@ void location(float latitude, float longitude, float altitude, float accuracy, v
 	our_latitude = latitude * 10000;
 	our_longitude = longitude * 10000;
 	located = true;
-	request_weather();
+	if (!isTransitioning)
+	{
+		request_weather();
+		set_timer((AppContextRef)context);
+	}
+	else
+	{
+		//requestWeatherIntro();
+	}
 }
 
 void reconnect(void* context) {
@@ -871,23 +981,8 @@ void GetAndSetCurrentWord(PblTm* currentTime)
 		case 2:
             currentWord = 6;//night
             break;
-    }
-
-    if (previousWord != currentWord)
-    {
-		SetBitmap(WORD);
-		previousWord = currentWord;
-    }
-    
+    }    
 }
-/*void FormatTime(PblTm* currentTime)
-{
-	formattedTime = [YYYY]-[MM]-[DD]T[HH]:[MM]:[SS]
-}
-formattedTime = [YYYY]-[MM]-[DD]T[HH]:[MM]:[SS]*/
-/*void DeIntWatchface();
-{
-}*/
 
 void DayTransition(AppContextRef ctx);
 	
@@ -928,16 +1023,7 @@ void handle_minute_tick(AppContextRef ctx, PebbleTickEvent *t) {
 		//not right, should be by itself but don't want to pass around w/e
 
 		int hour = t->tick_time->tm_hour;
-		if (previousHour != hour)
-		{
-			currentDay = 	t->tick_time->tm_mday;
-			previousHour = hour;
-			GetAndSetCurrentWord(t->tick_time);
-			//if within check for weather()
-		}
-
-
-
+	
 		if (!clock_is_24h_style()) 
 		{
 			hour = hour % 12;
@@ -956,16 +1042,33 @@ void handle_minute_tick(AppContextRef ctx, PebbleTickEvent *t) {
 
 		SetBitmap(TIME);
 		
-		if(!located || !(t->tick_time->tm_min % 60))
+		if(!located || !(t->tick_time->tm_min % 15))
 		{
 			//Every 60 minutes, request updated weather			
 			request_weather();
 		}
-		else if (httpFailed)
-		{
+		//else if (httpFailed)
+		//{
 			//Every minute, ping the phone
-			link_monitor_ping();
+		//	link_monitor_ping();
+		//}
+		
+		if (previousHour != hour)
+		{
+			currentDay = 	t->tick_time->tm_mday;
+			previousHour = hour;
+			GetAndSetCurrentWord(t->tick_time);
+			if (previousWord != currentWord)
+			{
+				//if (!Initializing)
+				//WordTransition(ctx);
+				SetBitmap(WORD);
+				previousWord = currentWord;
+			}
+			
+			//if within check for weather()
 		}
+
 		
 		/*if (previousDay != t->tick_time->tm_mday)
 		{
@@ -1027,12 +1130,6 @@ void Watchface()//DISPLAYS THE "WATCH PART" OR, NO TRANSITIONS ARE RUNNING
 	}
 }
 
-
-void WordTransitionIntro()
-{
-	
-}
-
 void StartWatchface(AppContextRef ctx)
 {
 	(void) ctx;
@@ -1050,7 +1147,7 @@ void StartWatchface(AppContextRef ctx)
 	Initializing = false;
 }
 
-void ClosingAnimationStopped(Animation* animation, bool finished, void* context)
+/*void ClosingAnimationStopped(Animation* animation, bool finished, void* context)
 {
 	
 	layer_remove_from_parent(&dayTransition.layerTextYear.layer);
@@ -1071,19 +1168,6 @@ void ClosingAnimationStopped(Animation* animation, bool finished, void* context)
 	layer_remove_from_parent(&dayTransition.layerClosingRight.layer);
 	StartWatchface(context);
 }
-
-/*void ClosingAnimationStarted(Animation* animation, bool finished, void* context)
-{
-	for (int i = 0; i < 4; i++)
-	{
-		if (i != 2)
-		{
-			layer_remove_from_parent(&dayTransition.day[i].layerDay.layer);
-			layer_remove_from_parent(&dayTransition.day[i].layerWord.layer);
-		}
-	}
-	RemoveAndDeIntBmp(WEATHER);
-}*/
 
 void HoldAnimationStopped(Animation* animation, bool finished, void* context) 
 {
@@ -1168,7 +1252,7 @@ void SetupSlidingFrames()
 		}
 		
 		//for now it'll be the same day on all of them, but we'll have to implement maths and offsets later
-		/*static char wordText[] = " Xxx";
+		///static char wordText[] = " Xxx";
 		static char dayText[] = "00";		
 		
 		//string_format_time(dayText, sizeof(dayText), " %d", dayTransition.tick.tick_time); //NUMBERS
@@ -1181,7 +1265,7 @@ void SetupSlidingFrames()
 			if (wordText[index] >= 'a' && wordText[index] <= 'z') {
 				wordText[index] -= 0x20;
 			}
-		}*/
+		}
 		
 		//properly offset
 		
@@ -1320,11 +1404,7 @@ void requestIntroWeather() {
 	// Build the HTTP request
 	DictionaryIterator *body;
 	HTTPResult result = http_out_get("http://masamuneshadow.herobo.com/api/weather_intro.php", WEATHER_HTTP_COOKIE, &body);
-	if(result != HTTP_OK) {
-		currentWeather = 11;
-		SetBitmap(WEATHER);
-		return;
-	}
+	
 	dict_write_int32(body, WEATHER_KEY_LATITUDE, our_latitude);
 	dict_write_int32(body, WEATHER_KEY_LONGITUDE, our_longitude);
 	//dict_write_cstring(body, WEATHER_KEY_UNIT_SYSTEM, UNIT_SYSTEM);
@@ -1341,37 +1421,164 @@ void requestIntroWeather() {
 
 void DayTransition(AppContextRef ctx)
 {
+
+	requestIntroWeather();
+	if none
+	requestIntroWeather
+	end if
 	
 	isTransitioning = true;
 		//setup
 	dayTransition.startRect = START_RECT;
 	dayTransition.endRect = END_RECT;
-		
+	if none 
+	requestIntroWeather
+	end if	
 	bitmap_layer_init(&dayTransition.layerDayTrans, dayTransition.startRect);
 	bitmap_layer_set_background_color(&dayTransition.layerDayTrans, GColorWhite);
 	layer_add_child(&window.layer, &dayTransition.layerDayTrans.layer);
-
+if none 
+	requestIntroWeather
+	end if
 	//opening bar animation
 	property_animation_init_layer_frame(&dayTransition.openingAnimation, &dayTransition.layerDayTrans.layer,&dayTransition.startRect,&dayTransition.endRect);
+	if none 
+	requestIntroWeather
+	end if
 	animation_set_duration(&dayTransition.openingAnimation.animation, openAnimationDuration);
 	animation_set_delay(&dayTransition.openingAnimation.animation, openAnimationDelay);
   	animation_set_handlers(&dayTransition.openingAnimation.animation, (AnimationHandlers){
 	.stopped = (AnimationStoppedHandler)OpeningAnimationStopped
 	}, (void*)ctx);
+	if none 
+	requestIntroWeather
+	end if
 	animation_schedule(&dayTransition.openingAnimation.animation);
-	requestIntroWeather();
+	if none 
+	requestIntroWeather
+	end if
 	get_time(&dayTransition.tm);
+	if none 
+	requestIntroWeather
+	end if
     dayTransition.tick.tick_time = &dayTransition.tm;
+}*/
+
+void WordTransitionExitAnimationStopped(Animation* animation, bool finished, void* context)
+{
+	
+	/*layer_remove_from_parent(&dayTransition.layerTextYear.layer);
+	layer_remove_from_parent(&dayTransition.layerTextMonth.layer);
+	layer_remove_from_parent(&dayTransition.layerInvert.layer);
+
+	for (int i = 0; i < 4; i++)
+	{
+		{
+			layer_remove_from_parent(&dayTransition.day[i].layerDay.layer);
+			layer_remove_from_parent(&dayTransition.day[i].layerWord.layer);
+		}
+	}
+	RemoveAndDeIntBmp(WEATHER);
+	
+	layer_remove_from_parent(&dayTransition.layerDayTrans.layer);
+	layer_remove_from_parent(&dayTransition.layerClosingLeft.layer);
+	layer_remove_from_parent(&dayTransition.layerClosingRight.layer);*/
+	StartWatchface(context);
+}
+/*
+void WordTransitionFlipAnimationSecondHalfStopped(Animation* animation, bool finished, void* context) 
+{	
+	//should just be able to take the points and criss-cross them (left->right, right->left)
+	property_animation_init_layer_frame(&wordTransition.exitAnimation.animation, &wordTransition.layerSquare.layer,&wordTransition.holdRect,&wordTransition.exitRect);
+	
 }
 
-void WordTransition()
+void WordTransitionFlipAnimationFirstHalfStopped(Animation* animation, bool finished, void* context) 
+{	
+	//should just be able to take the points and criss-cross them (left->right, right->left)
+	//now with the actual current.
+	wordTransition.layerWordFrame = wordTransition.holdLayerWordFrame;
+	SetBitmap(WORD);
+	
+	
+	
+		
+	property_animation_init_layer_frame(&wordTransition.flipAnimationSecondHalf.animation, &dayTransition.layer,&wordTransition.,&wordTransition);
+	animation_set_duration(&wordTransition.flipAnimationSecondHalf.animation, flipAnimationDuration);
+		animation_set_handlers(&dayTransition.day[3].slideLeftImgAnimation.animation, (AnimationHandlers){
+		.stopped = (AnimationStoppedHandler)WordTransitionFlipAnimationSecondHalfStopped
+	}, context);
+	animation_schedule(&wordTransition.flipAnimationSecondHalf.animation);
+	
+	
+}*/
+
+/*void WordTransitionStartAnimationStopped(Animation* animation, bool finished, void* context) 
+{	
+	//start the hold flipped one.
+	the flip should just be the two black closers from the previous thing.
+	
+		property_animation_init_layer_frame(&wordTransition.flipAnimationFirstHalf.animation, &wordTransition.layerSquare.layer,&wordTransition.holdRect,&wordTransition.holdHalfRect);
+		animation_set_duration(&wordTransition.flipAnimationFirstHalf.animation, flipAnimationDuration);
+		animation_set_handlers(&wordTransition.flipAnimationFirstHalf.animation, (AnimationHandlers){
+		.stopped = (AnimationStoppedHandler)WordTransitionFlipAnimationFirstHalfStopped
+	}, context);
+	animation_schedule(&wordTransition.flipAnimationFirstHalf.animation);
+}*/
+
+
+
+void WordTransition(AppContextRef ctx)
 {
-	if (!isDayTransition)
+	if (!isTransitioning)
 	{
-		//end
-		isWordTransition = false;
-		isTransitioning = false;
-		Watchface();
+		//no need to de-int what's going on in the background
+		//just make a new thing to go on top of it
+		isWordTransition = true;
+		isTransitioning = true;
+			
+		wordTransition.backgroundRect = BACKGROUND_FRAME;
+		wordTransition.endRect = WORD_SQUARE_FRAME_END;
+		wordTransition.holdRect = WORD_SQUARE_FRAME_HOLD;
+		wordTransition.startRect = WORD_SQUARE_FRAME_START;
+		wordTransition.layerWordFrame = WORD_TEXT_FRAME;
+		
+		bitmap_layer_init(&wordTransition.layerBackground, wordTransition.backgroundRect);
+		bitmap_layer_set_background_color(&wordTransition.layerBackground, GColorBlack);
+		layer_add_child(&window.layer, &wordTransition.layerBackground.layer);
+		
+		bitmap_layer_init(&wordTransition.layerSquare, wordTransition.startRect);
+		bitmap_layer_set_background_color(&wordTransition.layerBackground, GColorWhite);
+		layer_add_child(&window.layer, &wordTransition.layerSquare.layer);
+		
+		wordTransition.previousWordHolder = previousWord;
+		wordTransition.currentWordHolder = currentWord;
+		currentWord = previousWord;
+		//initally display the "current" (but really previous) word
+		SetBitmap(WORD);
+		//setup the holders
+		previousWord = wordTransition.previousWordHolder;
+		currentWord = wordTransition.currentWordHolder;
+		
+			/* Need to figure out how to properly rotate a square into a diamond
+		https://github.com/pebble/pebblekit/blob/master/Pebble/demos/feature_image_transparent_rotate/src/feature_image_transparent_rotate.c
+		just make a square, and then use that code to rotate it 45 degrees (or however much I want)
+		
+		bam that easy.
+		
+		void square_layer_update_callback(Layer *me, GContext* ctx) {
+		  (void)me;
+		  graphics_context_set_stroke_color(ctx, GColorWhite); // TODO: Needed?
+		  graphics_context_set_fill_color(ctx, GColorWhite);
+		  graphics_fill_rect(ctx, GRect(12,0,120,50), 0, GCornersAll);
+		}*/
+		property_animation_init_layer_frame(&wordTransition.startAnimation, &wordTransition.layerSquare.layer, &wordTransition.startRect, &wordTransition.holdRect);
+		animation_set_duration(&wordTransition.startAnimation.animation, startAnimationDuration);
+		animation_set_delay(&wordTransition.startAnimation.animation, 3000);
+		/*animation_set_handlers(&wordTransition.startAnimation.animation, (AnimationHandlers){
+		.stopped = (AnimationStoppedHandler)WordTransitionStartAnimationStopped
+		}, (void*)ctx);*/
+		animation_schedule(&wordTransition.startAnimation.animation);
 	}
 }
 
@@ -1391,12 +1598,12 @@ void handle_init(AppContextRef ctx) {
 	fontDate = fonts_load_custom_font(resDate);
 	resAbbr = resource_get_handle(RESOURCE_ID_FONT_DAYS_13);
 	fontAbbr = fonts_load_custom_font(resAbbr);
-	resYear = resource_get_handle(RESOURCE_ID_FONT_DAYS_13);
-	fontYear = fonts_load_custom_font(resYear);
-	resMonth = resource_get_handle(RESOURCE_ID_FONT_DAYS_42);
-	fontMonth = fonts_load_custom_font(resMonth);
-	resTiny = resource_get_handle(RESOURCE_ID_FONT_DAYS_16);
-	fontTiny = fonts_load_custom_font(resTiny);
+	//resYear = resource_get_handle(RESOURCE_ID_FONT_DAYS_13);
+	//fontYear = fonts_load_custom_font(resYear);
+	//resMonth = resource_get_handle(RESOURCE_ID_FONT_DAYS_42);
+	//fontMonth = fonts_load_custom_font(resMonth);
+	//resTiny = resource_get_handle(RESOURCE_ID_FONT_DAYS_16);
+	//fontTiny = fonts_load_custom_font(resTiny);
 	
     //SETUP INIT STUFF
 	//previousMinute = 99;
@@ -1411,30 +1618,40 @@ void handle_init(AppContextRef ctx) {
 	currentWeather = 11; //uNKNOWN
 
 	http_register_callbacks((HTTPCallbacks){.failure=failed,.success=success,.reconnect=reconnect,.location=location}, (void*)ctx);
-	DayTransition(ctx);
-	//(Leads into BG Display)	
+	//requestIntroWeather();
+	Watchface();
+	//isTransitioning = false;
+	//WordTransition(ctx);
+	//DayTransition(ctx);
+	
 }
 
 void handle_deinit(AppContextRef ctx) 
 {
 	(void)ctx;
-		animation_unschedule_all();
-		bmp_deinit_container(&background_image);
-		bmp_deinit_container(&imgWeather);
-		bmp_deinit_container(&imgWord_BLACK);
-		bmp_deinit_container(&imgWord_WHITE);
-		bmp_deinit_container(&imgColon_BLACK);
-		bmp_deinit_container(&imgColon_WHITE);
-		for (int i = 0; i < TOTAL_TIME_DIGITS; i++)
-		{
-			bmp_deinit_container(&imgTime_BLACK[i]);
-			bmp_deinit_container(&imgTime_WHITE[i]);
-		}
-		fonts_unload_custom_font(fontDate);
-		fonts_unload_custom_font(fontAbbr);
-		fonts_unload_custom_font(fontYear);
-		fonts_unload_custom_font(fontMonth);
-		fonts_unload_custom_font(fontTiny);
+	animation_unschedule_all();
+	bmp_deinit_container(&background_image);
+	bmp_deinit_container(&imgWeather);
+	bmp_deinit_container(&imgWord_BLACK);
+	bmp_deinit_container(&imgWord_WHITE);
+	bmp_deinit_container(&imgColon_BLACK);
+	bmp_deinit_container(&imgColon_WHITE);
+	//bmp_deinit_container(&dayTransition.layerDayTrans);
+	/*bmp_deinit_container(&wordTransition.layerBackground);
+	bmp_deinit_container(&wordTransition.layerSquare);
+	bmp_deinit_container(&wordTransition.layerWord_WHITE);
+	bmp_deinit_container(&wordTransition.layerWord_BLACK);*/
+	
+	for (int i = 0; i < TOTAL_TIME_DIGITS; i++)
+	{
+		bmp_deinit_container(&imgTime_BLACK[i]);
+		bmp_deinit_container(&imgTime_WHITE[i]);
+	}
+	fonts_unload_custom_font(fontDate);
+	fonts_unload_custom_font(fontAbbr);
+	//fonts_unload_custom_font(fontYear);
+	//fonts_unload_custom_font(fontMonth);
+	//fonts_unload_custom_font(fontTiny);
 }
 
 void pbl_main(void *params)
@@ -1460,6 +1677,7 @@ void pbl_main(void *params)
 }
 
 void request_weather() {
+	//try it without the location request.
 	if(!located) {
 		http_location_request();
 		return;
@@ -1469,11 +1687,11 @@ void request_weather() {
 	HTTPResult result = http_out_get("http://masamuneshadow.herobo.com/api/weather_current.php", WEATHER_HTTP_COOKIE, &body);
 	//HTTPResult result = http_out_get("http://pwdb.kathar.in/pebble/weather3.php", WEATHER_HTTP_COOKIE, &body);	
 	//HTTPResult result = http_out_get("http://www.zone-mr.net/api/weather.php", WEATHER_HTTP_COOKIE, &body);
-	if(result != HTTP_OK) {
+	/*if(result != HTTP_OK) {
 		currentWeather = 11;
 		SetBitmap(WEATHER);
 		return;
-	}
+	}*/
 	dict_write_int32(body, WEATHER_KEY_LATITUDE, our_latitude);
 	dict_write_int32(body, WEATHER_KEY_LONGITUDE, our_longitude);
 	//dict_write_cstring(body, WEATHER_KEY_UNIT_SYSTEM, UNIT_SYSTEM);
@@ -1490,3 +1708,39 @@ void request_weather() {
 //get weather @ 8
 //get weather at 6 pm?
 //if mornweather == pmweather use non-split image.
+/*
+need to call the request FIRST THING, possibly get the location even sooner.
+
+move the weather call earlier
+ensure the link occurs earlier
+
+there is currently a memory leak.
+
+could store the data for faster use later via misbehaving
+store it in a bitmap, frame = 1 "letter" in binary
+black = 0 , white = 1,
+1 pixel
+can store 18 in one line
+
+but i need to determine if I can even get orphaned data, and possibly how i could get the orphaned data/check of its existance when bringing it back up.
+
+new Program structure
+init
+have it do the weather call/request
+setup
+setup watchface
+create the transition ontop of it (isTransitioning, IsDayTransition = true)
+do the animation
+    (after the hold, no delay)
+de-int it all, and then that should leave just the watchface stuff.
+
+
+maybe
+(10:57:11 AM) : i think i just need to rocket out queries at the start, and I'm going to restructure it to give myself ever-so-slightly more time before the animation starts
+(10:57:49 AM) : because if it takes 2.5 MS to calc and return, and I take 5ms wait before starting the animation, there shouldn't be any problem
+(10:58:08 AM) : or i could extend the animation to maybe play for twice as long
+
+use the option 3 to setup the weather as well (set the currentWeather)
+
+in the deinit, add in the dayTrans stuff. and wordTrans stuff to DeInt.
+*/
