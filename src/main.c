@@ -1,11 +1,9 @@
 #include "pebble_os.h"
 #include "pebble_app.h"
 #include "pebble_fonts.h"
-
+#include "mini-printf.h"
 #include "http.h"
 #include "util.h"
-//#include "weather_layer.h"
-//#include "time_layer.h"
 #include "link_monitor.h"
 #include "config.h"
 	
@@ -21,10 +19,10 @@ PBL_APP_INFO(MY_UUID,
 // POST variables
 #define WEATHER_KEY_LATITUDE 1
 #define WEATHER_KEY_LONGITUDE 2
-#define WEATHER_KEY_UNIT_SYSTEM 3
+
 // Received variables
 #define WEATHER_KEY_ICON 1
-#define WEATHER_KEY_TEMPERATURE 2
+//#define WEATHER_KEY_TEMPERATURE 2
 		
 #define WEATHER_HTTP_COOKIE 1949327671
 #define TIME_HTTP_COOKIE 1131038282
@@ -40,7 +38,7 @@ PBL_APP_INFO(MY_UUID,
 #define timePosY 55
 	
 #define	dateFrame  (GRect(0,2,100,26))
-#define	wordDateFrame  (GRect(90,10,50,26))
+#define	wordDateFrame  (GRect(80,10,50,26))
 #define	wordFrame  (GRect(0,32,144,21))
 #define	weatherFrame  (GRect(53,87,75,75))
 
@@ -436,7 +434,7 @@ void SetBitmap(char* bitmap)
 	}
 }
 
-void request_weather();
+/*void request_weather();
 
 void failed(int32_t cookie, int http_status, void* context) {
 	//vibes_short_pulse();
@@ -482,6 +480,8 @@ void location(float latitude, float longitude, float altitude, float accuracy, v
 	// Fix the floats
 	our_latitude = latitude * 10000;
 	our_longitude = longitude * 10000;
+	//text_layer_set_text(&layerDate, itoa(our_latitude));
+	//text_layer_set_text(&layerDateWord, itoa(our_longitude));
 	located = true;
 	if (!isTransitioning)
 	{
@@ -494,7 +494,71 @@ void reconnect(void* context) {
 	request_weather();
 }
 
+void request_weather();*/
+
 void request_weather();
+void handle_timer(AppContextRef app_ctx, AppTimerHandle handle, uint32_t cookie);
+
+void failed(int32_t cookie, int http_status, void* context) {
+	if(cookie == 0 || cookie == WEATHER_HTTP_COOKIE) {
+		currentWeather = 11;
+		SetBitmap(WEATHER);
+	}
+}
+
+void success(int32_t cookie, int http_status, DictionaryIterator* received, void* context) {
+	
+	if(cookie != WEATHER_HTTP_COOKIE) return;
+	Tuple* icon_tuple = dict_find(received, WEATHER_KEY_ICON);
+	int icon = icon_tuple->value->int8;
+	/*static char lat[20];
+	mini_snprintf(lat, 20, "%d", icon);
+	text_layer_set_text(&layerDate, lat);*/
+	if(icon >= 0 && icon < 5)
+	{
+		currentWeather = icon;
+	}
+	else
+	{
+		currentWeather = 11;
+	}
+	SetBitmap(WEATHER);
+}
+
+void reconnect(void* context) {
+	request_weather();
+}
+
+void set_timer(AppContextRef ctx) {
+	app_timer_send_event(ctx, 1740000, 1);
+}
+
+void location(float latitude, float longitude, float altitude, float accuracy, void* context) {
+	// Fix the floats	
+	our_latitude = latitude * 10000;
+	our_longitude = longitude * 10000;
+	
+	/*static char lat[20];
+	mini_snprintf(lat, 20, "%d", our_latitude);
+	text_layer_set_text(&layerDate, lat);
+	
+	static char lon[20];
+	mini_snprintf(lon, 20, "%d", our_longitude);
+	text_layer_set_text(&layerDateWord, lon);*/
+	
+	located = true;
+	request_weather();
+	set_timer((AppContextRef)context);
+}
+
+void handle_timer(AppContextRef ctx, AppTimerHandle handle, uint32_t cookie) {
+	request_weather();
+	// Update again in fifteen minutes.
+	if(cookie)
+		set_timer(ctx);
+}
+
+
 
 void GetAndSetCurrentWord(PblTm* currentTime)
 {
@@ -605,7 +669,7 @@ void handle_minute_tick(AppContextRef ctx, PebbleTickEvent *t) {
 
 		SetBitmap(TIME);
 		
-		if(!located || !(t->tick_time->tm_min % 15))
+		/*if(!located || !(t->tick_time->tm_min % 15))
 		{
 			//Every 60 minutes, request updated weather			
 			request_weather();
@@ -614,7 +678,7 @@ void handle_minute_tick(AppContextRef ctx, PebbleTickEvent *t) {
 		{
 			//Every minute, ping the phone
 			link_monitor_ping();
-		}
+		}*/
 		
 		if (previousHour != hour)
 		{
@@ -692,6 +756,7 @@ void StartWatchface(AppContextRef ctx)
     t.units_changed = SECOND_UNIT | MINUTE_UNIT | HOUR_UNIT | DAY_UNIT;
 
 	handle_minute_tick(ctx, &t);
+		request_weather();
 	Initializing = false;
 }
 
@@ -725,6 +790,7 @@ void handle_init(AppContextRef ctx) {
 	currentWeather = 11; //uNKNOWN
 
 	http_register_callbacks((HTTPCallbacks){.failure=failed,.success=success,.reconnect=reconnect,.location=location}, (void*)ctx);
+	located = false;
 	StartWatchface(ctx);
 	
 }
@@ -760,10 +826,11 @@ void pbl_main(void *params)
             .tick_handler = &handle_minute_tick,
             .tick_units = MINUTE_UNIT
         },
+			.timer_handler = handle_timer,
 			.messaging_info = {
 			.buffer_sizes = {
 			.inbound = 124,
-			.outbound = 124,
+			.outbound = 256,
 				}
 			}
     };
@@ -779,20 +846,14 @@ void request_weather() {
 	}
 	// Build the HTTP request
 	DictionaryIterator *body;
-	HTTPResult result = http_out_get("http://masamuneshadow.herobo.com/api/weather_current.php", WEATHER_HTTP_COOKIE, &body);
-	//HTTPResult result = http_out_get("http://pwdb.kathar.in/pebble/weather3.php", WEATHER_HTTP_COOKIE, &body);	
-	//HTTPResult result = http_out_get("http://www.zone-mr.net/api/weather.php", WEATHER_HTTP_COOKIE, &body);
-//	if(result != HTTP_OK) {
-	//	currentWeather = 11;
-		//SetBitmap(WEATHER);
-//		return;
-//	}
+	HTTPResult result = http_out_get("http://masamuneshadow.herobo.com/api/weather_current_DEBUG.php", WEATHER_HTTP_COOKIE, &body);
+	if(result != HTTP_OK) {
+		currentWeather = 11;
+		SetBitmap(WEATHER);
+		return;
+	}
 	dict_write_int32(body, WEATHER_KEY_LATITUDE, our_latitude);
 	dict_write_int32(body, WEATHER_KEY_LONGITUDE, our_longitude);
-	//dict_write_cstring(body, WEATHER_KEY_UNIT_SYSTEM, UNIT_SYSTEM);
-	//Get formatted Time(formattedTime);
-	//dict_write_cstring(body, WEATHER_KEY_TIME, formattedTime);
-	//HTTP_TIME_KEY
 	// Send it.
 	if(http_out_send() != HTTP_OK) {
 		currentWeather = 11;

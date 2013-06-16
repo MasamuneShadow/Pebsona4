@@ -34,11 +34,11 @@ void link_monitor_handle_failure(int error)
 			//The phone may have no internet connection, but the link should be fine
 			return;
 
-#ifdef DEBUG
+/*#ifdef DEBUG
 		default:
 			//Unrecognised failure reason. Debug.
 			text_layer_set_text(&layerDate, itoa(error));
-#endif
+#endif*/
 	}
 
 	if(__linkStatus == LinkStatusOK)
