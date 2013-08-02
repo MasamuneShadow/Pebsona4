@@ -1225,12 +1225,7 @@ void OffsetDays(PblTm* inputTime,int offset)
 	
 	//now for the offset Days part
 	if (inputTime->tm_mday > monthMaxDay[inputTime->tm_mon])
-	{
-		if (inputTime->tm_mon != 11)
-			inputTime->tm_mday =- monthMaxDay[inputTime->tm_mon+1];
-		else
-		  inputTime->tm_mday =- monthMaxDay[0];
-	}
+		inputTime->tm_mday -= monthMaxDay[inputTime->tm_mon];
 	else if (inputTime->tm_mday <= 0)
 		inputTime->tm_mday = monthMaxDay[inputTime->tm_mon-1] - inputTime->tm_mday;
 }
