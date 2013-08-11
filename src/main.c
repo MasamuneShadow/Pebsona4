@@ -12,7 +12,7 @@
 //find a way to have this work without using this id!
 PBL_APP_INFO(MY_UUID,
              "Pebsona4", "Masamune_Shadow",
-             1, 8, /* App version */
+             1, 9, /* App version */
              RESOURCE_ID_IMAGE_MENU_ICON,
              APP_INFO_WATCH_FACE);
 
@@ -123,7 +123,7 @@ So sorry about this.
 #define openAnimationDuration 500
 #define closingAnimationDuration 500
 #define slideAnimationDuration 600
-#define openAnimationDelay 500
+#define openAnimationDelay 2000
 #define closingAnimationDelay 500
 #define slideAnimationDelay 250
 #define instantDuration 1
@@ -377,6 +377,8 @@ bool watchfaceStarted = false;
 bool fIntroWeatherGet = false;
 bool fAbleToPlaceSuccessfully = false;
 bool Initializing = true;
+bool bHaveWeather = false;
+bool bRequestingWeather = false;
 
 //Weather Stuff
 static int our_latitude, our_longitude;
@@ -817,7 +819,15 @@ void SetBitmap(char* bitmap)
 void request_weather();
 void handle_timer(AppContextRef app_ctx, AppTimerHandle handle, uint32_t cookie);
 
-void failed(int32_t cookie, int http_status, void* context) {
+void SetWeatherBools(bool bSet)
+{
+	bRequestingWeather = false; //requesting is over.
+    bHaveWeather = bSet;
+}
+
+void failed(int32_t cookie, int http_status, void* context) 
+{
+	SetWeatherBools(false);	
 	if(cookie == 0 || cookie == WEATHER_HTTP_COOKIE) 
 	{
 		if (isTransitioning && isDayTransition)
@@ -836,6 +846,7 @@ void failed(int32_t cookie, int http_status, void* context) {
 void success(int32_t cookie, int http_status, DictionaryIterator* received, void* context) 
 {
 	if(cookie != WEATHER_HTTP_COOKIE) return;
+	SetWeatherBools(true);
 	if (!isTransitioning)
 	{
 		Tuple* icon_tuple = dict_find(received, WEATHER_KEY_ICON);
@@ -863,25 +874,39 @@ void success(int32_t cookie, int http_status, DictionaryIterator* received, void
 
 		if(cookie != WEATHER_HTTP_COOKIE) return;
 
-		Tuple*	 icon  = dict_find(received,INTRO_DAY1_ICON);
-		Tuple*	 icon2 = dict_find(received,INTRO_DAY2_ICON);
-		Tuple*	 icon3 = dict_find(received,INTRO_DAY3_ICON);
-		Tuple*	 icon4 = dict_find(received,INTRO_DAY4_ICON);
-
-		dayTransition.day[0].currentWeather = icon->value->int8;
-		dayTransition.day[1].currentWeather = icon2->value->int8;
-		dayTransition.day[2].currentWeather = icon3->value->int8;
-		dayTransition.day[3].currentWeather = icon4->value->int8;		
+		Tuple*	 icon_tuple1  = dict_find(received,INTRO_DAY1_ICON);
+		Tuple*	 icon_tuple2 = dict_find(received,INTRO_DAY2_ICON);
+		Tuple*	 icon_tuple3 = dict_find(received,INTRO_DAY3_ICON);
+		Tuple*	 icon_tuple4 = dict_find(received,INTRO_DAY4_ICON);
+		if (icon_tuple1)
+		{		
+			uint16_t value1 = icon_tuple1->value->int16;
+			uint16_t value2 = icon_tuple2->value->int16;
+			uint16_t value3 = icon_tuple3->value->int16;
+			uint16_t value4 = icon_tuple4->value->int16;
+			
+			uint8_t icon1 = value1 >> 11;
+			uint8_t icon2 = value2 >> 11;
+			uint8_t icon3 = value3 >> 11;
+			uint8_t icon4 = value4 >> 11;
+			
+			dayTransition.day[0].currentWeather = icon1;
+			dayTransition.day[1].currentWeather = icon2;
+			dayTransition.day[2].currentWeather = icon3;
+			dayTransition.day[3].currentWeather = icon4;
+			vibes_short_pulse(); //debug
+		}
+		else
+			dayTransition.day[0].currentWeather = 11;
 
 		fIntroWeatherGet = true;
-		
+		//currentWeather = dayTransition.day[2].currentWeather;
 		SetBitmap(WEATHER);
 	}
 }
 void requestIntroWeather();
 
 void reconnect(void* context) {
-	requestIntroWeather();
 	request_weather();
 }
 
@@ -893,23 +918,12 @@ void location(float latitude, float longitude, float altitude, float accuracy, v
 	// Fix the floats	
 	our_latitude = latitude * 10000;
 	our_longitude = longitude * 10000;
-
-	/*static char lat[20];
-	mini_snprintf(lat, 20, "%d", our_latitude);
-	text_layer_set_text(&layerDate, lat);
-	
-	static char lon[20];
-	mini_snprintf(lon, 20, "%d", our_longitude);
-	text_layer_set_text(&layerDateWord, lon);*/
-
 	located = true;
-	requestIntroWeather();
 	request_weather();
 	set_timer((AppContextRef)context);
 }
 
 void handle_timer(AppContextRef ctx, AppTimerHandle handle, uint32_t cookie) {
-	requestIntroWeather();
 	request_weather();
 	// Update again in fifteen minutes.
 	if(cookie)
@@ -920,6 +934,8 @@ void handle_timer(AppContextRef ctx, AppTimerHandle handle, uint32_t cookie) {
 
 void GetAndSetCurrentWord(PblTm* currentTime)
 {
+	//AppContextRef ctx/
+	//(void)ctx;
     switch (currentTime->tm_hour)
     {
         case 0:
@@ -965,6 +981,7 @@ void GetAndSetCurrentWord(PblTm* currentTime)
 	if (previousWord != currentWord)
 	{
 		SetBitmap(WORD);
+		//WordTransition(ctx);
 		previousWord = currentWord;
 	}
 }
@@ -1027,11 +1044,11 @@ void handle_minute_tick(AppContextRef ctx, PebbleTickEvent *t) {
 
 		SetBitmap(TIME);
 
-		if(!located || !(t->tick_time->tm_min % 15))
+		if((!located || !(t->tick_time->tm_min % 15)) || (!Initializing && !bRequestingWeather && !bHaveWeather))
 		{
 			//Every 15 minutes, request updated weather			
+			bHaveWeather = false;
 			request_weather();
-			requestIntroWeather();
 		}
 
 		if (previousHour != hour)
@@ -1106,11 +1123,10 @@ void StartWatchface(AppContextRef ctx)
 {
 	//this could very well have gone in the handle_init, but for now atleast, it's here.
 	//this should only ever be called once, and only once.
-	//request_weather();
 	(void) ctx;
 	isTransitioning = false;
 	isDayTransition = false;
-	//isWordTransition = false;
+	isWordTransition = false;
 	Watchface(ctx);
 	watchfaceStarted = true;
 	PblTm tm;
@@ -1121,7 +1137,6 @@ void StartWatchface(AppContextRef ctx)
     t.tick_time = &tm;
     t.units_changed = SECOND_UNIT | MINUTE_UNIT | HOUR_UNIT | DAY_UNIT;
 	handle_minute_tick(ctx, &t);
-	//request_weather();
 	Initializing = false;
 }
 
@@ -1143,6 +1158,8 @@ void ClosingAnimationStopped(Animation* animation, bool finished, void* context)
 	}
 	RemoveAndDeIntBmp(WEATHER);
 
+	//cover layer L
+	//cover layer R
 	layer_remove_from_parent(&dayTransition.layerDayTrans.layer);
 	layer_remove_from_parent(&dayTransition.layerClosingLeft.layer);
 	layer_remove_from_parent(&dayTransition.layerClosingRight.layer);
@@ -1154,10 +1171,6 @@ void ClosingAnimationStopped(Animation* animation, bool finished, void* context)
 	}
 	else
 	{
-		//static char wordText[20];
-		//strftime(wordText,20,"%c", dayTransition.day[1].date);
-		//text_layer_set_text(&layerDateWord, wordText);
-
 		isTransitioning = false;
 		isDayTransition = false;
 		request_weather();
@@ -1594,48 +1607,57 @@ month = month + 1*/
 	animation_schedule(&dayTransition.day[3].slideLeftImgAnimation.animation);
 }
 
-void requestIntroWeather() {
-	if(!located) {
-		http_location_request();
-		return;
+void requestIntroWeather() 
+{
+	if (!bRequestingWeather)
+	{
+		bHaveWeather = false;
+		if(!located) 
+		{
+			http_location_request();
+			return;
+		}
+		bRequestingWeather = true;
+		// Build the HTTP request
+		DictionaryIterator *body;
+		//HTTPResult result = http_out_get("http://masamuneshadow.herobo.com/api/weather_intro.php", WEATHER_HTTP_COOKIE, &body);
+		HTTPResult result = http_out_get("http://masamuneshadow.herobo.com/api/weather_intro_DEBUG.php", WEATHER_HTTP_COOKIE, &body);
+	
+		if(result != HTTP_OK) {
+			dayTransition.day[0].currentWeather = 11;
+			dayTransition.day[1].currentWeather = 11;
+			dayTransition.day[2].currentWeather = 11;
+			dayTransition.day[3].currentWeather = 11;
+			fIntroWeatherGet = false;
+			SetBitmap(WEATHER);
+			return;
+		}
+	
+		dict_write_int32(body, WEATHER_KEY_LATITUDE, our_latitude);
+		dict_write_int32(body, WEATHER_KEY_LONGITUDE, our_longitude);
+	
+		// Send it.
+		if(http_out_send() != HTTP_OK) {
+			dayTransition.day[0].currentWeather = 11;
+			dayTransition.day[1].currentWeather = 11;
+			dayTransition.day[2].currentWeather = 11;
+			dayTransition.day[3].currentWeather = 11;
+			fIntroWeatherGet = false;
+			SetBitmap(WEATHER);
+			return;
+		}
 	}
-	// Build the HTTP request
-	DictionaryIterator *body;
-	//HTTPResult result = http_out_get("http://masamuneshadow.herobo.com/api/weather_intro.php", WEATHER_HTTP_COOKIE, &body);
-	HTTPResult result = http_out_get("http://masamuneshadow.herobo.com/api/weather_intro_DEBUG.php", WEATHER_HTTP_COOKIE, &body);
-
-	if(result != HTTP_OK) {
-		dayTransition.day[0].currentWeather = 11;
-		dayTransition.day[1].currentWeather = 11;
-		dayTransition.day[2].currentWeather = 11;
-		dayTransition.day[3].currentWeather = 11;
-		fIntroWeatherGet = false;
-		SetBitmap(WEATHER);
-		return;
+	/*else
+	{
+	//make sure that they have data (DT.D#)
+	SetBitmap(WEATHER); 
 	}
-
-	dict_write_int32(body, WEATHER_KEY_LATITUDE, our_latitude);
-	dict_write_int32(body, WEATHER_KEY_LONGITUDE, our_longitude);
-
-	// Send it.
-	if(http_out_send() != HTTP_OK) {
-		dayTransition.day[0].currentWeather = 11;
-		dayTransition.day[1].currentWeather = 11;
-		dayTransition.day[2].currentWeather = 11;
-		dayTransition.day[3].currentWeather = 11;
-		fIntroWeatherGet = false;
-		SetBitmap(WEATHER);
-		return;
-	}
+	
+	*/
 }
 
 void DayTransition(AppContextRef ctx)
 {
-
-	//requestIntroWeather();
-	/*if none
-	requestIntroWeather
-	end if*/
 
 	isTransitioning = true;
 	isDayTransition = true;
@@ -1815,6 +1837,10 @@ void handle_init(AppContextRef ctx) {
 	currentWord = 99;
 	currentDay = 88;
 	currentWeather = 11; //uNKNOWN
+	dayTransition.day[0].currentWeather = 11;
+	dayTransition.day[1].currentWeather = 11;
+	dayTransition.day[2].currentWeather = 11;
+	dayTransition.day[3].currentWeather = 11;
 
 	http_register_callbacks((HTTPCallbacks){.failure=failed,.success=success,.reconnect=reconnect,.location=location}, (void*)ctx);
 	located = false;
@@ -1822,8 +1848,6 @@ void handle_init(AppContextRef ctx) {
 	StartWatchface(ctx);
 	//isTransitioning = true;
 	//isDayTransition = true;
-	//request_weather();
-	//requestIntroWeather();
 	//TVLoadingScreen();
 	DayTransition(ctx);
 }
@@ -1831,7 +1855,7 @@ void handle_init(AppContextRef ctx) {
 void handle_deinit(AppContextRef ctx) 
 {
 	(void)ctx;
-
+	
 	animation_unschedule_all();
 	bmp_deinit_container(&background_image);
 	bmp_deinit_container(&imgWeather);
@@ -1862,6 +1886,7 @@ void handle_deinit(AppContextRef ctx)
 	fonts_unload_custom_font(fontAbbr);
 	fonts_unload_custom_font(fontYear);
 	fonts_unload_custom_font(fontMonth);
+	RemoveAndDeIntBmp(ALL);
 }
 
 void pbl_main(void *params)
@@ -1889,64 +1914,30 @@ void pbl_main(void *params)
 
 void request_weather() {
 	//try it without the location request.
-	if(!located) {
-		http_location_request();
-		return;
-	}
-	// Build the HTTP request
-	DictionaryIterator *body;
-	//HTTPResult result = http_out_get("http://masamuneshadow.herobo.com/api/weather_current.php", WEATHER_HTTP_COOKIE, &body);
-	HTTPResult result = http_out_get("http://masamuneshadow.herobo.com/api/weather_current_DEBUG.php", WEATHER_HTTP_COOKIE, &body);
-	if(result != HTTP_OK) {
-		currentWeather = 11;
-		SetBitmap(WEATHER);
-		return;
-	}
-	dict_write_int32(body, WEATHER_KEY_LATITUDE, our_latitude);
-	dict_write_int32(body, WEATHER_KEY_LONGITUDE, our_longitude);
-	// Send it.
-	if(http_out_send() != HTTP_OK) {
-		currentWeather = 11;
-		SetBitmap(WEATHER);
-		return;
+	if (!bRequestingWeather)
+	{
+		bHaveWeather = false;
+		if(!located) {
+			http_location_request();
+			return;
+		}
+		bRequestingWeather = true;
+		// Build the HTTP request
+		DictionaryIterator *body;
+		//HTTPResult result = http_out_get("http://masamuneshadow.herobo.com/api/weather_current.php", WEATHER_HTTP_COOKIE, &body);
+		HTTPResult result = http_out_get("http://masamuneshadow.herobo.com/api/weather_current_DEBUG.php", WEATHER_HTTP_COOKIE, &body);
+		if(result != HTTP_OK) {
+			currentWeather = 11;
+			SetBitmap(WEATHER);
+			return;
+		}
+		dict_write_int32(body, WEATHER_KEY_LATITUDE, our_latitude);
+		dict_write_int32(body, WEATHER_KEY_LONGITUDE, our_longitude);
+		// Send it.
+		if(http_out_send() != HTTP_OK) {
+			currentWeather = 11;
+			SetBitmap(WEATHER);
+			return;
+		}
 	}
 }
-//get weather @ 8
-//get weather at 6 pm?
-//if mornweather == pmweather use non-split image.
-/*
-need to call the request FIRST THING, possibly get the location even sooner.
-
-move the weather call earlier
-ensure the link occurs earlier
-
-there is currently a memory leak.
-
-could store the data for faster use later via misbehaving
-store it in a bitmap, frame = 1 "letter" in binary
-black = 0 , white = 1,
-1 pixel
-can store 18 in one line
-
-but i need to determine if I can even get orphaned data, and possibly how i could get the orphaned data/check of its existance when bringing it back up.
-
-new Program structure
-init
-have it do the weather call/request
-.setup
-setup watchface
-create the transition ontop of it (isTransitioning, IsDayTransition = true)
-do the animation
-    (after the hold, no delay)
-de-int it all, and then that should leave just the watchface stuff.
-
-
-maybe
-(10:57:11 AM) : i think i just need to rocket out queries at the start, and I'm going to restructure it to give myself ever-so-slightly more time before the animation starts
-(10:57:49 AM) : because if it takes 2.5 MS to calc and return, and I take 5ms wait before starting the animation, there shouldn't be any problem
-(10:58:08 AM) : or i could extend the animation to maybe play for twice as long
-
-use the option 3 to setup the weather as well (set the currentWeather)
-
-in the deinit, add in the dayTrans stuff. and wordTrans stuff to DeInt.
-*/
